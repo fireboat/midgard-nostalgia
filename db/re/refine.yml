@@ -117,7 +117,7 @@ Body:
                 Rate: 6000
                 Price: 2000
                 Material: Elunium
-                BreakingRate: 10000
+                DowngradeAmount: 1
               - Type: HD
                 Rate: 6000
                 Price: 20000
@@ -135,7 +135,7 @@ Body:
                 Rate: 4000
                 Price: 2000
                 Material: Elunium
-                BreakingRate: 10000
+                DowngradeAmount: 1
               - Type: HD
                 Rate: 4000
                 Price: 20000
@@ -153,7 +153,7 @@ Body:
                 Rate: 4000
                 Price: 2000
                 Material: Elunium
-                BreakingRate: 10000
+                DowngradeAmount: 1
               - Type: HD
                 Rate: 4000
                 Price: 20000
@@ -172,7 +172,7 @@ Body:
                 Rate: 2000
                 Price: 2000
                 Material: Elunium
-                BreakingRate: 10000
+                DowngradeAmount: 1
               - Type: HD
                 Rate: 2000
                 Price: 20000
@@ -191,7 +191,7 @@ Body:
                 Rate: 2000
                 Price: 2000
                 Material: Elunium
-                BreakingRate: 10000
+                DowngradeAmount: 1
               - Type: HD
                 Rate: 2000
                 Price: 20000
@@ -210,7 +210,7 @@ Body:
                 Rate: 900
                 Price: 2000
                 Material: Elunium
-                BreakingRate: 10000
+                DowngradeAmount: 1
               - Type: HD
                 Rate: 900
                 Price: 20000
@@ -778,7 +778,7 @@ Body:
                 Rate: 6000
                 Price: 50
                 Material: Phracon
-                BreakingRate: 10000
+                DowngradeAmount: 1
               - Type: HD
                 Rate: 6000
                 Price: 20000
@@ -798,7 +798,7 @@ Body:
                 Rate: 4000
                 Price: 50
                 Material: Phracon
-                BreakingRate: 10000
+                DowngradeAmount: 1
               - Type: HD
                 Rate: 4000
                 Price: 20000
@@ -818,7 +818,7 @@ Body:
                 Rate: 1900
                 Price: 50
                 Material: Phracon
-                BreakingRate: 10000
+                DowngradeAmount: 1
               - Type: HD
                 Rate: 1900
                 Price: 20000
@@ -1099,7 +1099,7 @@ Body:
                 Rate: 6000
                 Price: 200
                 Material: Emveretarcon
-                BreakingRate: 10000
+                DowngradeAmount: 1
               - Type: HD
                 Rate: 6000
                 Price: 20000
@@ -1119,7 +1119,7 @@ Body:
                 Rate: 4000
                 Price: 200
                 Material: Emveretarcon
-                BreakingRate: 10000
+                DowngradeAmount: 1
               - Type: HD
                 Rate: 4000
                 Price: 20000
@@ -1139,7 +1139,7 @@ Body:
                 Rate: 2000
                 Price: 200
                 Material: Emveretarcon
-                BreakingRate: 10000
+                DowngradeAmount: 1
               - Type: HD
                 Rate: 2000
                 Price: 20000
@@ -1149,7 +1149,7 @@ Body:
                 Rate: 4000
                 Price: 2000
                 Material: Enriched_Oridecon
-                BreakingRate: 10000
+                DowngradeAmount: 1
           - Level: 10
             Bonus: 3000
             RandomBonus: 2000
@@ -1159,7 +1159,7 @@ Body:
                 Rate: 1900
                 Price: 200
                 Material: Emveretarcon
-                BreakingRate: 10000
+                DowngradeAmount: 1
               - Type: HD
                 Rate: 1900
                 Price: 20000
@@ -1169,7 +1169,7 @@ Body:
                 Rate: 3000
                 Price: 2000
                 Material: Enriched_Oridecon
-                BreakingRate: 10000
+                DowngradeAmount: 1
           - Level: 11
             Bonus: 3300
             RandomBonus: 2500
@@ -1425,7 +1425,7 @@ Body:
                 Rate: 6000
                 Price: 5000
                 Material: Oridecon
-                BreakingRate: 10000
+                DowngradeAmount: 1
               - Type: HD
                 Rate: 6000
                 Price: 20000
@@ -1435,7 +1435,7 @@ Body:
                 Rate: 9000
                 Price: 2000
                 Material: Enriched_Oridecon
-                BreakingRate: 10000
+                DowngradeAmount: 1
           - Level: 7
             Bonus: 3500
             RandomBonus: 1600
@@ -1444,7 +1444,7 @@ Body:
                 Rate: 5000
                 Price: 5000
                 Material: Oridecon
-                BreakingRate: 10000
+                DowngradeAmount: 1
               - Type: HD
                 Rate: 5000
                 Price: 20000
@@ -1454,7 +1454,7 @@ Body:
                 Rate: 8000
                 Price: 2000
                 Material: Enriched_Oridecon
-                BreakingRate: 10000
+                DowngradeAmount: 1
           - Level: 8
             Bonus: 4000
             RandomBonus: 2400
@@ -1464,7 +1464,7 @@ Body:
                 Rate: 2000
                 Price: 5000
                 Material: Oridecon
-                BreakingRate: 10000
+                DowngradeAmount: 1
               - Type: HD
                 Rate: 2000
                 Price: 20000
@@ -1474,7 +1474,7 @@ Body:
                 Rate: 4000
                 Price: 2000
                 Material: Enriched_Oridecon
-                BreakingRate: 10000
+                DowngradeAmount: 1
           - Level: 9
             Bonus: 4500
             RandomBonus: 3200
@@ -1484,7 +1484,7 @@ Body:
                 Rate: 2000
                 Price: 5000
                 Material: Oridecon
-                BreakingRate: 10000
+                DowngradeAmount: 1
               - Type: HD
                 Rate: 2000
                 Price: 20000
@@ -1494,7 +1494,7 @@ Body:
                 Rate: 4000
                 Price: 2000
                 Material: Enriched_Oridecon
-                BreakingRate: 10000
+                DowngradeAmount: 1
           - Level: 10
             Bonus: 5000
             RandomBonus: 4000
@@ -1504,7 +1504,7 @@ Body:
                 Rate: 1900
                 Price: 5000
                 Material: Oridecon
-                BreakingRate: 10000
+                DowngradeAmount: 1
               - Type: HD
                 Rate: 1900
                 Price: 20000
@@ -1514,7 +1514,7 @@ Body:
                 Rate: 3000
                 Price: 2000
                 Material: Enriched_Oridecon
-                BreakingRate: 10000
+                DowngradeAmount: 1
           - Level: 11
             Bonus: 5500
             RandomBonus: 4800
@@ -1755,7 +1755,7 @@ Body:
                 Rate: 6000
                 Price: 20000
                 Material: Oridecon
-                BreakingRate: 10000
+                DowngradeAmount: 1
               - Type: HD
                 Rate: 6000
                 Price: 20000
@@ -1765,7 +1765,7 @@ Body:
                 Rate: 9000
                 Price: 2000
                 Material: Enriched_Oridecon
-                BreakingRate: 10000
+                DowngradeAmount: 1
           - Level: 6
             Bonus: 4200
             RandomBonus: 2800
@@ -1774,7 +1774,7 @@ Body:
                 Rate: 4000
                 Price: 20000
                 Material: Oridecon
-                BreakingRate: 10000
+                DowngradeAmount: 1
               - Type: HD
                 Rate: 4000
                 Price: 20000
@@ -1784,7 +1784,7 @@ Body:
                 Rate: 7000
                 Price: 2000
                 Material: Enriched_Oridecon
-                BreakingRate: 10000
+                DowngradeAmount: 1
           - Level: 7
             Bonus: 4900
             RandomBonus: 4200
@@ -1793,7 +1793,7 @@ Body:
                 Rate: 4000
                 Price: 20000
                 Material: Oridecon
-                BreakingRate: 10000
+                DowngradeAmount: 1
               - Type: HD
                 Rate: 4000
                 Price: 20000
@@ -1803,7 +1803,7 @@ Body:
                 Rate: 7000
                 Price: 2000
                 Material: Enriched_Oridecon
-                BreakingRate: 10000
+                DowngradeAmount: 1
           - Level: 8
             Bonus: 5600
             RandomBonus: 5600
@@ -1813,7 +1813,7 @@ Body:
                 Rate: 2000
                 Price: 20000
                 Material: Oridecon
-                BreakingRate: 10000
+                DowngradeAmount: 1
               - Type: HD
                 Rate: 2000
                 Price: 20000
@@ -1823,7 +1823,7 @@ Body:
                 Rate: 4000
                 Price: 2000
                 Material: Enriched_Oridecon
-                BreakingRate: 10000
+                DowngradeAmount: 1
           - Level: 9
             Bonus: 6300
             RandomBonus: 7000
@@ -1833,7 +1833,7 @@ Body:
                 Rate: 2000
                 Price: 20000
                 Material: Oridecon
-                BreakingRate: 10000
+                DowngradeAmount: 1
               - Type: HD
                 Rate: 2000
                 Price: 20000
@@ -1843,7 +1843,7 @@ Body:
                 Rate: 4000
                 Price: 2000
                 Material: Enriched_Oridecon
-                BreakingRate: 10000
+                DowngradeAmount: 1
           - Level: 10
             Bonus: 7000
             RandomBonus: 8400
@@ -1853,7 +1853,7 @@ Body:
                 Rate: 900
                 Price: 20000
                 Material: Oridecon
-                BreakingRate: 10000
+                DowngradeAmount: 1
               - Type: HD
                 Rate: 900
                 Price: 20000
@@ -1863,7 +1863,7 @@ Body:
                 Rate: 2000
                 Price: 2000
                 Material: Enriched_Oridecon
-                BreakingRate: 10000
+                DowngradeAmount: 1
           - Level: 11
             Bonus: 7700
             RandomBonus: 9800

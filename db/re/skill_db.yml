@@ -4158,10 +4158,6 @@ Body:
           Amount: 29
         - Level: 5
           Amount: 32
-      Weapon:
-        1hAxe: true
-        2hAxe: true
-        Mace: true
     Status: Adrenaline
   - Id: 112
     Name: BS_WEAPONPERFECT
@@ -4958,10 +4954,14 @@ Body:
     MaxLevel: 10
     Type: Weapon
     TargetType: Attack
+    DamageFlags:
+      Critical: true
     Range: 1
     Hit: Multi_Hit
     HitCount: -8
     Element: Weapon
+    AfterCastActDelay: 2000
+    AfterCastWalkDelay: 2000
     Duration2: 4500
     Cooldown: 1000
     CastDelayFlags:
@@ -5177,7 +5177,7 @@ Body:
     Unit:
       Id: Venomdust
       Layout: -1
-      Range: 1
+      Range: 2
       Interval: 1000
       Target: Enemy
       Flag:
@@ -5191,12 +5191,12 @@ Body:
     TargetType: Attack
     DamageFlags:
       NoDamage: true
-      IgnoreAtkCard: true
       IgnoreFlee: true
+      TargetTrap: true
     Range: 1
     Hit: Single
     HitCount: 1
-    Element: Weapon
+    Element: Poison
     SplashArea: 2
     CopyFlags:
       Skill:
@@ -5205,49 +5205,52 @@ Body:
     CastTime: 500
     Duration1:
       - Level: 1
-        Time: 11000
+        Time: 5000
       - Level: 2
-        Time: 10000
+        Time: 5000
       - Level: 3
-        Time: 9000
+        Time: 5000
       - Level: 4
-        Time: 8000
+        Time: 5000
       - Level: 5
-        Time: 7000
+        Time: 5000
       - Level: 6
-        Time: 6000
+        Time: 5000
       - Level: 7
         Time: 5000
       - Level: 8
-        Time: 4000
+        Time: 5000
       - Level: 9
-        Time: 3000
+        Time: 5000
       - Level: 10
-        Time: 2000
+        Time: 5000
     Duration2: 18000
     Cooldown:
       - Level: 1
-        Time: 7500
+        Time: 2000
       - Level: 2
-        Time: 8000
+        Time: 2000
       - Level: 3
-        Time: 8500
+        Time: 2000
       - Level: 4
-        Time: 9000
+        Time: 2000
       - Level: 5
-        Time: 9500
+        Time: 2000
       - Level: 6
-        Time: 10000
+        Time: 2000
       - Level: 7
-        Time: 10500
+        Time: 2000
       - Level: 8
-        Time: 11000
+        Time: 2000
       - Level: 9
-        Time: 11500
+        Time: 2000
       - Level: 10
         Time: 2000
     FixedCastTime: 500
     Requires:
+      ItemCost:
+        - Item: Red_Gemstone
+          Amount: 1
       SpCost:
         - Level: 1
           Amount: 12

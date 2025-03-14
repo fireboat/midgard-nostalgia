@@ -177,7 +177,6 @@ Body:
       Poison: true
     Flags:
       SendOption: true
-      BossResist: true
       StopAttacking: true
       SpreadEffect: true
     Fail:
@@ -280,7 +279,6 @@ Body:
       Dpoison: true
     Flags:
       SendOption: true
-      BossResist: true
     Fail:
       Refresh: true
       Inspiration: true
@@ -362,8 +360,6 @@ Body:
   - Status: Cloaking
     Icon: EFST_CLOAKING
     DurationLookup: AS_CLOAKING
-    States:
-      NoPickItem: true
     CalcFlags:
       Cri: true
       Speed: true
@@ -595,7 +591,6 @@ Body:
       Hit: true
     Flags:
       MadoCancel: true
-      RequireWeapon: true
       RemoveOnHermode: true
     Fail:
       Quagmire: true
@@ -790,6 +785,7 @@ Body:
     DurationLookup: HT_ANKLESNARE
     States:
       NoMove: true
+      NoMoveCond: true
     Flags:
       NoClearbuff: true
       StopWalking: true
@@ -920,6 +916,8 @@ Body:
   - Status: Splasher
     Icon: EFST_SPLASHER
     DurationLookup: AS_SPLASHER
+    Flags:
+      RemoveOnDamaged: true
   - Status: Providence
     Icon: EFST_PROVIDENCE
     DurationLookup: CR_PROVIDENCE
