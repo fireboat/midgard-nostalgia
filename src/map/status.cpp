@@ -7561,7 +7561,7 @@ static defType status_calc_def(struct block_list *bl, status_change *sc, int32 d
 	if(sc->getSCE(SC_FREEZE))
 		def /= 2;
 	if(sc->getSCE(SC_POISON) || sc->getSCE(SC_DPOISON) && bl->type != BL_PC)
-		def = def * 75 / 100; //Should round down
+		def = def * 50 / 100; //Should round down
 	if(sc->getSCE(SC_SIGNUMCRUCIS))
 		def -= def * sc->getSCE(SC_SIGNUMCRUCIS)->val2/100;
 	if(sc->getSCE(SC_CONCENTRATION))
@@ -7652,7 +7652,7 @@ static int16 status_calc_def2(struct block_list *bl, status_change *sc, int32 de
 		def2 -= def2 * sc->getSCE(SC_CONCENTRATION)->val4/100;
 #endif
 	if(sc->getSCE(SC_POISON) || sc->getSCE(SC_DPOISON))
-		def2 = def2 * 75 / 100; //Should round down
+		def2 = def2 * 50 / 100; //Should round down
 	if(sc->getSCE(SC_SKE))
 		def2 -= def2 * 50/100;
 	if(sc->getSCE(SC_PROVOKE))
@@ -9950,6 +9950,7 @@ int32 status_change_start(struct block_list* src, struct block_list* bl,enum sc_
 		case SC_STONE:
 		case SC_STONEWAIT:
 		case SC_FREEZE:
+		case SC_POISON:
 			// Undead are immune to Freeze/Stone
 			if (undead_flag && !(flag&SCSTART_NOAVOID))
 				return 0;
@@ -10539,7 +10540,7 @@ int32 status_change_start(struct block_list* src, struct block_list* bl,enum sc_
 #else
 			val2=(val1+1)/2 + val1/10; // Number of counters [Skotlex]
 #endif
-			val3=50; // + 5*val1; // Chance to counter. [Skotlex]
+			val3=10*val1; // + 5*val1; // Chance to counter. [Skotlex]
 			break;
 		case SC_MAGICROD:
 			val2 = val1*20; // SP gained
@@ -10567,7 +10568,7 @@ int32 status_change_start(struct block_list* src, struct block_list* bl,enum sc_
 			tick = INFINITE_TICK;
 			break;
 		case SC_ENCPOISON:
-			val2= 250+50*val1; // Poisoning Chance (2.5+0.5%) in 1/10000 rate
+			val2= 100*val1; // Poisoning Chance (2.5+0.5%) in 1/10000 rate
 			break;
 		case SC_ELEMENTALCHANGE:
 			// val1 : Element Lvl (if called by skill lvl 1, takes random value between 1 and 4)
@@ -10790,11 +10791,15 @@ int32 status_change_start(struct block_list* src, struct block_list* bl,enum sc_
 
 		case SC_DPOISON:
 			// Lose 10/15% of your life as long as it doesn't brings life below 25%
-			if (status->hp > status->max_hp / 4) {
-				int32 diff = status->max_hp*(bl->type==BL_PC?10:15)/100;
-				if (status->hp - diff < status->max_hp / 4)
-					diff = status->hp - (status->max_hp / 4);
-				status_zap(bl, diff, 0);
+			// except boss & mvp
+			if (!(status->mode&MD_STATUSIMMUNE || status->mode&MD_MVP))
+			{
+				if (status->hp > status->max_hp / 4) {
+					int32 diff = status->max_hp*(bl->type==BL_PC?10:15)/100;
+					if (status->hp - diff < status->max_hp / 4)
+						diff = status->hp - (status->max_hp / 4);
+					status_zap(bl, diff, 0);
+				}
 			}
 			[[fallthrough]];
 		case SC_STONE:
@@ -13836,11 +13841,13 @@ TIMER_FUNC(status_change_timer){
 		if (sce->val4 >= 0 && !sc->getSCE(SC_SLOWPOISON)) {
 			uint32 damage = 0;
 			if (sd)
-				damage = (type == SC_DPOISON) ? 2 + status->max_hp / 50 : 2 + status->max_hp * 3 / 200;
+				damage = (type == SC_DPOISON) ? 2 + status->max_hp / 50 : 2 + status->max_hp * 3 / 100;
 			else
-				damage = (type == SC_DPOISON) ? 2 + status->max_hp / 100 : 2 + status->max_hp / 200;
-			if (status->hp > umax(status->max_hp / 4, damage)) // Stop damaging after 25% HP left.
-				status_zap(bl, damage, 0);
+				damage = (type == SC_DPOISON) ? 2 + status->max_hp / 100 : 2 + status->max_hp / 100;
+			// if (status->hp > umax(status->max_hp / 4, damage)) // Stop damaging after 25% HP left.
+			if (!sd && damage >= status->hp)
+				damage = status->hp - 1;
+			status_zap(bl, damage, 0);
 		}
 		break;
 

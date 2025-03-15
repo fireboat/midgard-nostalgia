@@ -1419,7 +1419,7 @@ int32 skill_additional_effect( struct block_list* src, struct block_list *bl, ui
 		break;
 
 	case TF_POISON:
-		if (!sc_start2(src, bl, SC_POISON, (4 * skill_lv + 10), skill_lv, src->id, skill_get_time2(skill_id, skill_lv)) && sd)
+		if (!sc_start2(src, bl, SC_POISON, (4 * skill_lv + 40), skill_lv, src->id, skill_get_time2(skill_id, skill_lv)) && sd)
 			clif_skill_fail( *sd, skill_id );
 		break;
 

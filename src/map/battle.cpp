@@ -3020,6 +3020,7 @@ static bool is_attack_critical(struct Damage* wd, struct block_list *src, struct
 				cri += 250 + 50*skill_lv;
 				break;
 #ifdef RENEWAL
+			case AS_SONICBLOW:
 			case ASC_BREAKER:
 #endif
 			case GC_CROSSIMPACT:
@@ -4045,6 +4046,7 @@ static void battle_calc_damage_parts(struct Damage* wd, struct block_list *src,s
 
 	// Right-hand status attack is doubled after elemental adjustments
 	wd->statusAtk *= 2;
+	wd->statusAtk2 *= 2;
 
 	// Check critical
 	if (wd->type == DMG_MULTI_HIT_CRITICAL || wd->type == DMG_CRITICAL)
@@ -4689,8 +4691,8 @@ static int32 battle_calc_attack_skill_ratio(struct Damage* wd, struct block_list
 			break;
 #ifdef RENEWAL
 		case KN_BRANDISHSPEAR:
-			skillratio += -100 + 400 + 100 * skill_lv + sstatus->str * 3;
-			break;
+			// skillratio += -100 + 400 + 100 * skill_lv + sstatus->str * 3;
+			// break;
 #else
 		case KN_BRANDISHSPEAR:
 #endif
@@ -4725,15 +4727,20 @@ static int32 battle_calc_attack_skill_ratio(struct Damage* wd, struct block_list
 			break;
 		case AS_SONICBLOW:
 #ifdef RENEWAL
-			skillratio += 100 + 100 * skill_lv;
-			if (tstatus->hp < (tstatus->max_hp / 2))
-				skillratio += skillratio / 2;
+			// skillratio += 100 + 100 * skill_lv;
+			// if (tstatus->hp < (tstatus->max_hp / 2))
+			// 	skillratio += skillratio / 2;
+			skillratio += 200 + 50 * skill_lv;
+			if (sd && pc_checkskill(sd, AS_SONICACCEL) > 0)
+				skillratio += skillratio / 10;
 #else
 			skillratio += 200 + 50 * skill_lv;
 			if (sd && pc_checkskill(sd, AS_SONICACCEL) > 0)
 				skillratio += skillratio / 10;
 #endif
 			break;
+		case TF_POISON:
+			skillratio += 15 * skill_lv;
 		case TF_SPRINKLESAND:
 			skillratio += 30;
 			break;
@@ -4783,7 +4790,8 @@ static int32 battle_calc_attack_skill_ratio(struct Damage* wd, struct block_list
 			break;
 		case RG_RAID:
 #ifdef RENEWAL
-			skillratio += -100 + 50 + skill_lv * 150;
+			// skillratio += -100 + 50 + skill_lv * 150;
+			skillratio += 40 * skill_lv;
 #else
 			skillratio += 40 * skill_lv;
 #endif
@@ -4804,8 +4812,8 @@ static int32 battle_calc_attack_skill_ratio(struct Damage* wd, struct block_list
 		case NPC_DARKCROSS:
 		case CR_HOLYCROSS:
 #ifdef RENEWAL
-			if(sd && sd->status.weapon == W_2HSPEAR)
-				skillratio += 70 * skill_lv;
+			if(sd && (tstatus->race == RC_UNDEAD || tstatus->race == RC_DEMON))
+				skillratio += 70 * skill_lv ;
 			else
 #endif
 				skillratio += 35 * skill_lv;
@@ -4968,7 +4976,8 @@ static int32 battle_calc_attack_skill_ratio(struct Damage* wd, struct block_list
 			break;
 		case AS_SPLASHER:
 #ifdef RENEWAL
-			skillratio += -100 + 400 + 100 * skill_lv;
+			// skillratio += -100 + 400 + 100 * skill_lv;
+			skillratio += 400 + 50 * skill_lv;
 #else
 			skillratio += 400 + 50 * skill_lv;
 #endif
@@ -7156,7 +7165,7 @@ static void battle_calc_attack_left_right_hands(struct Damage* wd, struct block_
 
 		if(sd->status.weapon == W_KATAR && !skill_id) { //Katars (offhand damage only applies to normal attacks, tested on Aegis 10.2)
 			skill = pc_checkskill(sd,TF_DOUBLE);
-			wd->damage2 = (int64)wd->damage * (1 + (skill * 2))/100;
+			wd->damage2 = (int64)wd->damage * (1 + (skill * 2))/(100 * wd->div_);
 #ifdef RENEWAL
 		} else if(is_attack_left_handed(src, skill_id) && sd->status.weapon != W_KATAR) {	//Dual-wield
 #else
@@ -7815,6 +7824,13 @@ static struct Damage battle_calc_weapon_attack(struct block_list *src, struct bl
 
 			if (sd->status.weapon == W_KATAR && (katar_skill = pc_checkskill(sd, ASC_KATAR)) > 0) // Adv. Katar Mastery applied after calculate with skillratio.
 				ATK_ADDRATE(wd.damage, wd.damage2, (10 + 2 * katar_skill));
+
+			// Poison React Passive: increase on poisoned target.
+			uint16 poisonreact_skill = pc_checkskill(sd, AS_POISONREACT);
+			if (poisonreact_skill > 0 && (tsc->getSCE(SC_POISON) || tsc->getSCE(SC_DPOISON)))
+			{
+				ATK_ADDRATE(wd.damage, wd.damage2, (2 * poisonreact_skill));
+			}
 		}
 
 		// Res reduces physical damage by a percentage and
@@ -10971,10 +10987,10 @@ enum damage_lv battle_weapon_attack(struct block_list* src, struct block_list* t
 		) {	//Poison React
 			struct status_change_entry *sce = tsc->getSCE(SC_POISONREACT);
 			if (sstatus->def_ele == ELE_POISON) {
-				sce->val2 = 0;
 				skill_attack(BF_WEAPON,target,target,src,AS_POISONREACT,sce->val1,tick,0);
+				--sce->val2;
 			} else {
-				skill_attack(BF_WEAPON,target,target,src,TF_POISON, 5, tick, 0);
+				skill_attack(BF_WEAPON,target,target,src,TF_POISON, pc_checkskill(sd, TF_POISON), tick, 0);
 				--sce->val2;
 			}
 			if (sce->val2 <= 0)
