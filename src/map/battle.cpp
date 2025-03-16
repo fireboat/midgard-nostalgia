@@ -3946,8 +3946,8 @@ static void battle_calc_attack_masteries(struct Damage* wd, struct block_list *s
 
 #ifdef RENEWAL
 		//General skill masteries
-		if(skill_id == TF_POISON) //Additional ATK from Envenom is treated as mastery type damage [helvetica]
-			ATK_ADD(wd->masteryAtk, wd->masteryAtk2, 15 * skill_lv);
+		// if(skill_id == TF_POISON) //Additional ATK from Envenom is treated as mastery type damage [helvetica]
+		// 	ATK_ADD(wd->masteryAtk, wd->masteryAtk2, 15 * skill_lv);
 		if (skill_id != MC_CARTREVOLUTION && pc_checkskill(sd, BS_HILTBINDING) > 0)
 			ATK_ADD(wd->masteryAtk, wd->masteryAtk2, 4);
 		// Star Crumb bonus damage
@@ -4740,7 +4740,8 @@ static int32 battle_calc_attack_skill_ratio(struct Damage* wd, struct block_list
 #endif
 			break;
 		case TF_POISON:
-			skillratio += 15 * skill_lv;
+			skillratio += 5 * skill_lv;
+			break;
 		case TF_SPRINKLESAND:
 			skillratio += 30;
 			break;
@@ -7826,11 +7827,14 @@ static struct Damage battle_calc_weapon_attack(struct block_list *src, struct bl
 				ATK_ADDRATE(wd.damage, wd.damage2, (10 + 2 * katar_skill));
 
 			// Poison React Passive: increase on poisoned target.
-			uint16 poisonreact_skill = pc_checkskill(sd, AS_POISONREACT);
-			if (poisonreact_skill > 0 && (tsc->getSCE(SC_POISON) || tsc->getSCE(SC_DPOISON)))
+			if (tsc)
 			{
-				ATK_ADDRATE(wd.damage, wd.damage2, (2 * poisonreact_skill));
-			}
+				uint16 poisonreact_skill;
+				if ((tsc->getSCE(SC_POISON) || tsc->getSCE(SC_DPOISON)) && (poisonreact_skill = pc_checkskill(sd, AS_POISONREACT)) > 0)
+				{
+					ATK_ADDRATE(wd.damage, wd.damage2, (2 * poisonreact_skill));
+				}
+			}	
 		}
 
 		// Res reduces physical damage by a percentage and
@@ -10990,7 +10994,8 @@ enum damage_lv battle_weapon_attack(struct block_list* src, struct block_list* t
 				skill_attack(BF_WEAPON,target,target,src,AS_POISONREACT,sce->val1,tick,0);
 				--sce->val2;
 			} else {
-				skill_attack(BF_WEAPON,target,target,src,TF_POISON, pc_checkskill(sd, TF_POISON), tick, 0);
+				uint8 envenom_level = pc_checkskill(tsd, TF_POISON);
+				skill_attack(BF_WEAPON,target,target,src,TF_POISON,envenom_level,tick,0);
 				--sce->val2;
 			}
 			if (sce->val2 <= 0)

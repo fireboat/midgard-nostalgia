@@ -5177,7 +5177,11 @@ Body:
     Unit:
       Id: Venomdust
       Layout: -1
-      Range: 2
+      Range:
+        - Level: 1
+          Size: 2
+        - Level: 6
+          Size: 3
       Interval: 1000
       Target: Enemy
       Flag:
@@ -5192,7 +5196,10 @@ Body:
     DamageFlags:
       NoDamage: true
       IgnoreFlee: true
+    Flags:
       TargetTrap: true
+      IgnoreAutoGuard: true
+      IgnoreCicada: true
     Range: 1
     Hit: Single
     HitCount: 1

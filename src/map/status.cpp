@@ -2342,6 +2342,8 @@ int32 status_base_amotion_pc(map_session_data* sd, struct status_data* status)
 	temp_aspd = (float)(sqrt(temp_aspd) * 0.25f) + 196;
 	if ((skill_lv = pc_checkskill(sd,SA_ADVANCEDBOOK)) > 0 && sd->status.weapon == W_BOOK)
 		val += (skill_lv - 1) / 2 + 1;
+	if ((skill_lv = pc_checkskill(sd, AS_LEFT)) > 0 && sd->weapontype2 == W_DAGGER)
+		val += (skill_lv * 2);
 	if ((skill_lv = pc_checkskill(sd, SG_DEVIL)) > 0 && ((sd->class_&MAPID_THIRDMASK) == MAPID_STAR_EMPEROR || pc_is_maxjoblv(sd)))
 		val += 1 + skill_lv;
 	if ((skill_lv = pc_checkskill(sd,GS_SINGLEACTION)) > 0 && (sd->status.weapon >= W_REVOLVER && sd->status.weapon <= W_GRENADE))
@@ -10540,7 +10542,7 @@ int32 status_change_start(struct block_list* src, struct block_list* bl,enum sc_
 #else
 			val2=(val1+1)/2 + val1/10; // Number of counters [Skotlex]
 #endif
-			val3=10*val1; // + 5*val1; // Chance to counter. [Skotlex]
+			val3= 50 + (5 * val1); // + 5*val1; // Chance to counter. [Skotlex]
 			break;
 		case SC_MAGICROD:
 			val2 = val1*20; // SP gained
@@ -13284,7 +13286,7 @@ int32 status_change_end(struct block_list* bl, enum sc_type type, int32 tid)
 			{
 				struct block_list *src=map_id2bl(sce->val3);
 
-				if(src && tid != INVALID_TIMER)
+				if(src)
 					skill_castend_damage_id(src, bl, sce->val2, sce->val1, gettick(), SD_LEVEL );
 			}
 			break;
