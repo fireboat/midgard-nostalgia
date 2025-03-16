@@ -13840,13 +13840,26 @@ TIMER_FUNC(status_change_timer){
 	case SC_DPOISON:
 		if (sce->val4 >= 0 && !sc->getSCE(SC_SLOWPOISON)) {
 			uint32 damage = 0;
+			mob_data *md = BL_CAST(BL_MOB, bl);
+
 			if (sd)
 				damage = (type == SC_DPOISON) ? 2 + status->max_hp / 50 : 2 + status->max_hp * 3 / 100;
 			else
 				damage = (type == SC_DPOISON) ? 2 + status->max_hp / 100 : 2 + status->max_hp / 100;
 			// if (status->hp > umax(status->max_hp / 4, damage)) // Stop damaging after 25% HP left.
 			if (!sd && damage >= status->hp)
-				damage = status->hp - 1;
+				damage = status->hp - 1; // No deadly damage for monsters
+
+			if (md)
+			{
+				// ignore interval damage for boss monsters
+				e_mob_bosstype bosstype = md->get_bosstype();
+				if (bosstype == BOSSTYPE_MVP || bosstype == BOSSTYPE_MINIBOSS)
+				{
+					damage = 0;
+				}
+			}
+
 			status_zap(bl, damage, 0);
 		}
 		break;
