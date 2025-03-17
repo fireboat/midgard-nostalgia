@@ -3739,7 +3739,7 @@ int64 skill_attack (int32 attack_type, struct block_list* src, struct block_list
 		}
 	}
 
-	damage = dmg.damage + dmg.damage2;
+	damage = dmg.damage;
 
 	if ((dmg.flag & BF_MAGIC) && tsc && tsc->getSCE(SC_MAXPAIN)) {
 		auto * sce = tsc->getSCE(SC_MAXPAIN);
@@ -3845,6 +3845,7 @@ int64 skill_attack (int32 attack_type, struct block_list* src, struct block_list
 		case NPC_CRITICALSLASH:
 		case TF_DOUBLE:
 		case GS_CHAINACTION:
+		case AS_POISONREACT:
 			dmg.dmotion = clif_damage(*src,*bl,tick,dmg.amotion,dmg.dmotion,damage,dmg.div_,dmg.type,dmg.damage2,false);
 			break;
 
@@ -10668,16 +10669,16 @@ int32 skill_castend_nodamage_id (struct block_list *src, struct block_list *bl, 
 		break;
 
 	case AS_SPLASHER:
-		if( status_has_mode(tstatus,MD_STATUSIMMUNE)
-		// Renewal dropped the 3/4 hp requirement
-#ifndef RENEWAL
-			|| tstatus-> hp > tstatus->max_hp*3/4
-#endif
-				) {
-			if (sd) clif_skill_fail( *sd, skill_id );
-			map_freeblock_unlock();
-			return 1;
-		}
+//		if( status_has_mode(tstatus,MD_STATUSIMMUNE)
+//		// Renewal dropped the 3/4 hp requirement
+//#ifndef RENEWAL
+//			|| tstatus-> hp > tstatus->max_hp*3/4
+//#endif
+//				) {
+//			if (sd) clif_skill_fail( *sd, skill_id );
+//			map_freeblock_unlock();
+//			return 1;
+//		}
 		clif_skill_nodamage(src,*bl,skill_id,skill_lv,
 			sc_start4(src,bl,type,100,skill_lv,skill_id,src->id,skill_get_time(skill_id,skill_lv),1000));
 		break;
@@ -24278,11 +24279,43 @@ void skill_init_unit_layout (void) {
 					}
 					break;
 				case AS_VENOMDUST: {
-						static const int32 dx[] = {-1, 0, 0, 0, 1};
-						static const int32 dy[] = { 0,-1, 0, 1, 0};
-						skill_unit_layout[pos].count = 5;
-						memcpy(skill_unit_layout[pos].dx,dx,sizeof(dx));
-						memcpy(skill_unit_layout[pos].dy,dy,sizeof(dy));
+						// lv1
+						static const int32 dx[] = { 0 };
+						static const int32 dy[] = { 0 };
+
+						// lv4
+						static const int32 dx1[] = {-1, 0, 0, 0, 1};
+						static const int32 dy1[] = { 0,-1, 0, 1, 0};
+
+						// lv7
+						static const int32 dx2[] = { -2, -1, -1, 0, 0, 1, 1, 2, -1, 0, 0, 0, 1 };
+						static const int32 dy2[] = { 0, -1, 1, -2, 2, -1, 1, 0, 0,-1, 0, 1, 0 };
+						
+						for (j = 0; j < MAX_SKILL_LEVEL; j++)
+						{
+							if (j < 3)
+							{
+								memcpy(skill_unit_layout[pos].dx, dx, sizeof(dx));
+								memcpy(skill_unit_layout[pos].dy, dy, sizeof(dy));
+								skill_unit_layout[pos].count = 1;
+								skill->unit_layout_type[j] = pos;
+							}
+							else if (j < 6)
+							{
+								memcpy(skill_unit_layout[pos].dx, dx1, sizeof(dx1));
+								memcpy(skill_unit_layout[pos].dy, dy1, sizeof(dy1));
+								skill_unit_layout[pos].count = 5;
+								skill->unit_layout_type[j] = pos;
+							}
+							else
+							{
+								memcpy(skill_unit_layout[pos].dx, dx2, sizeof(dx2));
+								memcpy(skill_unit_layout[pos].dy, dy2, sizeof(dy2));
+								skill_unit_layout[pos].count = 13;
+								skill->unit_layout_type[j] = pos;
+							}
+							pos++;
+						}
 					}
 					break;
 				case CR_GRANDCROSS:

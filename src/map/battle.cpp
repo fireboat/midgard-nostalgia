@@ -2918,7 +2918,7 @@ static bool is_attack_left_handed(struct block_list *src, int32 skill_id)
 {
 	if(src != nullptr) {
 		//Skills ALWAYS use ONLY your right-hand weapon (tested on Aegis 10.2)
-		if(!skill_id) {
+		if(!skill_id || skill_id == AS_POISONREACT) {
 			map_session_data *sd = BL_CAST(BL_PC, src);
 
 			if (sd) {
@@ -3020,7 +3020,6 @@ static bool is_attack_critical(struct Damage* wd, struct block_list *src, struct
 				cri += 250 + 50*skill_lv;
 				break;
 #ifdef RENEWAL
-			case AS_SONICBLOW:
 			case ASC_BREAKER:
 #endif
 			case GC_CROSSIMPACT:
@@ -4400,7 +4399,7 @@ static void battle_calc_multi_attack(struct Damage* wd, struct block_list *src,s
 	status_change *tsc = status_get_sc(target);
 	status_data* tstatus = status_get_status_data(*target);
 
-	if( sd && !skill_id ) {	// if no skill_id passed, check for double attack [helvetica]
+	if( sd && !skill_id || skill_id == AS_POISONREACT) {	// if no skill_id passed, check for double attack [helvetica]
 		int16 i;
 		if(sc && sc->getSCE(SC_FEARBREEZE) && sd->weapontype1==W_BOW
 			&& (i = sd->equip_index[EQI_AMMO]) >= 0 && sd->inventory_data[i] && sd->inventory.u.items_inventory[i].amount > 1)
@@ -4448,7 +4447,7 @@ static void battle_calc_multi_attack(struct Damage* wd, struct block_list *src,s
 				max_rate = sc->getSCE(SC_KAGEMUSYA)->val1 * 10; // Same rate as even levels of TF_DOUBLE
 			else
 #ifdef RENEWAL
-				max_rate = max(7 * skill_lv, sd->bonus.double_rate);
+				max_rate = max(5 * skill_lv, sd->bonus.double_rate);
 #else
 				max_rate = max(5 * skill_lv, sd->bonus.double_rate);
 #endif
@@ -4501,16 +4500,6 @@ static void battle_calc_multi_attack(struct Damage* wd, struct block_list *src,s
 				wd->div_ = 3;
 			}
 			break;
-#ifdef RENEWAL
-		case AS_POISONREACT:
-			skill_lv = pc_checkskill(sd, TF_DOUBLE);
-			if (skill_lv > 0) {
-				if(rnd()%100 < (7 * skill_lv)) {
-					wd->div_++;
-				}
-			}
-		break;
-#endif
 		case NW_SPIRAL_SHOOTING:
 			if (sd && sd->weapontype1 == W_GRENADE)
 				wd->div_ += 1;
@@ -4982,8 +4971,6 @@ static int32 battle_calc_attack_skill_ratio(struct Damage* wd, struct block_list
 #else
 			skillratio += 400 + 50 * skill_lv;
 #endif
-			if(sd)
-				skillratio += 20 * pc_checkskill(sd,AS_POISONREACT);
 			break;
 		case ASC_BREAKER:
 #ifdef RENEWAL
@@ -7201,6 +7188,7 @@ static void battle_calc_attack_left_right_hands(struct Damage* wd, struct block_
 		}
 	}
 
+
 	if(!is_attack_right_handed(src, skill_id) && !is_attack_left_handed(src, skill_id) && wd->damage)
 		wd->damage=0;
 
@@ -7590,17 +7578,17 @@ static struct Damage initialize_weapon_data(struct block_list *src, struct block
  */
 void battle_do_reflect(int32 attack_type, struct Damage *wd, struct block_list* src, struct block_list* target, uint16 skill_id, uint16 skill_lv)
 {
+	int64 damage = wd->damage + wd->damage2, rdamage = 0;
+	map_session_data* tsd = BL_CAST(BL_PC, target);
+	status_change* tsc = status_get_sc(target);
+	status_data* sstatus = status_get_status_data(*src);
+	struct unit_data* ud = unit_bl2ud(target);
+	t_tick tick = gettick(), rdelay = 0;
+
 	// Don't reflect your own damage (Grand Cross)
 	if ((wd->damage + wd->damage2) && src && target && src != target && (src->type != BL_SKILL ||
 		(src->type == BL_SKILL && (skill_id == SG_SUN_WARM || skill_id == SG_MOON_WARM || skill_id == SG_STAR_WARM ))))
 	{
-		int64 damage = wd->damage + wd->damage2, rdamage = 0;
-		map_session_data *tsd = BL_CAST(BL_PC, target);
-		status_change *tsc = status_get_sc(target);
-		status_data* sstatus = status_get_status_data(*src);
-		struct unit_data *ud = unit_bl2ud(target);
-		t_tick tick = gettick(), rdelay = 0;
-
 		if (!tsc)
 			return;
 
@@ -7630,6 +7618,31 @@ void battle_do_reflect(int32 attack_type, struct Damage *wd, struct block_list* 
 				battle_delay_damage(tick, wd->amotion, target, (!d_bl) ? src : d_bl, 0, CR_REFLECTSHIELD, 0, rdamage, ATK_DEF, rdelay ,true, false);
 				skill_additional_effect(target, (!d_bl) ? src : d_bl, CR_REFLECTSHIELD, 1, BF_WEAPON|BF_SHORT|BF_NORMAL, ATK_DEF, tick);
 			}
+		}
+	}
+
+
+	if (tsc) {
+		if (tsc->getSCE(SC_POISONREACT) &&
+			((damage > 0 && rnd() % 100 < tsc->getSCE(SC_POISONREACT)->val3)
+				// Poison React always counter Poison element attacks
+				|| sstatus->rhw.ele == ELE_POISON || sstatus->lhw.ele == ELE_POISON
+				|| sstatus->def_ele == ELE_POISON)
+			//check_distance_bl(src, target, tstatus->rhw.range+1) && Doesn't checks range! o.O;
+			&& status_check_skilluse(target, src, TF_POISON, 0)
+			) {
+			struct status_change_entry* sce = tsc->getSCE(SC_POISONREACT);
+			if (sstatus->def_ele == ELE_POISON || sstatus->rhw.ele == ELE_POISON || sstatus->lhw.ele == ELE_POISON) {
+				unit_walktobl(target, src, 1, 0);
+				skill_attack(BF_WEAPON, target, target, src, AS_POISONREACT, sce->val1, tick, 0);
+				--sce->val2;
+			}
+			else {
+				skill_attack(BF_WEAPON, target, target, src, TF_POISON, min(pc_checkskill(tsd, TF_POISON), sce->val1), tick, 0);
+				--sce->val2;
+			}
+			if (sce->val2 <= 0)
+				status_change_end(target, SC_POISONREACT);
 		}
 	}
 }
@@ -7829,10 +7842,9 @@ static struct Damage battle_calc_weapon_attack(struct block_list *src, struct bl
 			// Poison React Passive: increase on poisoned target.
 			if (tsc)
 			{
-				uint16 poisonreact_skill;
-				if ((tsc->getSCE(SC_POISON) || tsc->getSCE(SC_DPOISON)) && (poisonreact_skill = pc_checkskill(sd, AS_POISONREACT)) > 0)
+				if ((tsc->getSCE(SC_POISON) || tsc->getSCE(SC_DPOISON)) && sc->getSCE(SC_POISONREACT))
 				{
-					ATK_ADDRATE(wd.damage, wd.damage2, (2 * poisonreact_skill));
+					ATK_ADDRATE(wd.damage, wd.damage2, (2 * sc->getSCE(SC_POISONREACT)->val1));
 				}
 			}	
 		}
@@ -10449,14 +10461,6 @@ enum damage_lv battle_weapon_attack(struct block_list* src, struct block_list* t
 			}
 		}
 	}
-	if (sc != nullptr && !sc->empty()) {
-		if (sc->getSCE(SC_CLOAKING) && !(sc->getSCE(SC_CLOAKING)->val4 & 2))
-			status_change_end(src, SC_CLOAKING);
-		else if (sc->getSCE(SC_CLOAKINGEXCEED) && !(sc->getSCE(SC_CLOAKINGEXCEED)->val4 & 2))
-			status_change_end(src, SC_CLOAKINGEXCEED);
-		else if (sc->getSCE(SC_NEWMOON) && --(sc->getSCE(SC_NEWMOON)->val2) <= 0)
-			status_change_end(src, SC_NEWMOON);
-	}
 	if (tsc && tsc->getSCE(SC_AUTOCOUNTER) && status_check_skilluse(target, src, KN_AUTOCOUNTER, 1)) {
 		uint8 dir = map_calc_dir(target,src->x,src->y);
 		int32 t_dir = unit_getdir(target);
@@ -10610,7 +10614,15 @@ enum damage_lv battle_weapon_attack(struct block_list* src, struct block_list* t
 				sc->getSCE(SC_FEARBREEZE)->val4 = 0;
 			}
 		}
+
+		if (sc->getSCE(SC_CLOAKING) && !(sc->getSCE(SC_CLOAKING)->val4 & 2))
+			status_change_end(src, SC_CLOAKING);
+		else if (sc->getSCE(SC_CLOAKINGEXCEED) && !(sc->getSCE(SC_CLOAKINGEXCEED)->val4 & 2))
+			status_change_end(src, SC_CLOAKINGEXCEED);
+		else if (sc->getSCE(SC_NEWMOON) && --(sc->getSCE(SC_NEWMOON)->val2) <= 0)
+			status_change_end(src, SC_NEWMOON);
 	}
+
 	if (sd && sd->state.arrow_atk) //Consume arrow.
 		battle_consume_ammo(sd, 0, 0);
 
@@ -10979,27 +10991,6 @@ enum damage_lv battle_weapon_attack(struct block_list* src, struct block_list* t
 				battle_drain(sd, target, wd.damage, wd.damage, tstatus->race, tstatus->class_);
 			else
 				battle_drain(sd, target, wd.damage, wd.damage2, tstatus->race, tstatus->class_);
-		}
-	}
-
-	if (tsc) {
-		if (damage > 0 && tsc->getSCE(SC_POISONREACT) &&
-			(rnd()%100 < tsc->getSCE(SC_POISONREACT)->val3
-			|| sstatus->def_ele == ELE_POISON) &&
-//			check_distance_bl(src, target, tstatus->rhw.range+1) && Doesn't checks range! o.O;
-			status_check_skilluse(target, src, TF_POISON, 0)
-		) {	//Poison React
-			struct status_change_entry *sce = tsc->getSCE(SC_POISONREACT);
-			if (sstatus->def_ele == ELE_POISON) {
-				skill_attack(BF_WEAPON,target,target,src,AS_POISONREACT,sce->val1,tick,0);
-				--sce->val2;
-			} else {
-				uint8 envenom_level = pc_checkskill(tsd, TF_POISON);
-				skill_attack(BF_WEAPON,target,target,src,TF_POISON,envenom_level,tick,0);
-				--sce->val2;
-			}
-			if (sce->val2 <= 0)
-				status_change_end(target, SC_POISONREACT);
 		}
 	}
 

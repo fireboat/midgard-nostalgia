@@ -5093,25 +5093,25 @@ Body:
     HitCount: 1
     Duration1:
       - Level: 1
-        Time: 20000
-      - Level: 2
-        Time: 25000
-      - Level: 3
-        Time: 30000
-      - Level: 4
-        Time: 35000
-      - Level: 5
-        Time: 40000
-      - Level: 6
-        Time: 45000
-      - Level: 7
-        Time: 50000
-      - Level: 8
-        Time: 55000
-      - Level: 9
         Time: 60000
+      - Level: 2
+        Time: 75000
+      - Level: 3
+        Time: 90000
+      - Level: 4
+        Time: 105000
+      - Level: 5
+        Time: 120000
+      - Level: 6
+        Time: 135000
+      - Level: 7
+        Time: 150000
+      - Level: 8
+        Time: 165000
+      - Level: 9
+        Time: 180000
       - Level: 10
-        Time: 65000
+        Time: 195000
     Requires:
       SpCost:
         - Level: 1
@@ -5177,11 +5177,7 @@ Body:
     Unit:
       Id: Venomdust
       Layout: -1
-      Range:
-        - Level: 1
-          Size: 2
-        - Level: 6
-          Size: 3
+      Range: 1
       Interval: 1000
       Target: Enemy
       Flag:
@@ -5234,25 +5230,25 @@ Body:
     Duration2: 18000
     Cooldown:
       - Level: 1
-        Time: 2000
+        Time: 3000
       - Level: 2
-        Time: 2000
+        Time: 3000
       - Level: 3
-        Time: 2000
+        Time: 3000
       - Level: 4
-        Time: 2000
+        Time: 3000
       - Level: 5
-        Time: 2000
+        Time: 3000
       - Level: 6
-        Time: 2000
+        Time: 3000
       - Level: 7
-        Time: 2000
+        Time: 3000
       - Level: 8
-        Time: 2000
+        Time: 3000
       - Level: 9
-        Time: 2000
+        Time: 3000
       - Level: 10
-        Time: 2000
+        Time: 3000
     FixedCastTime: 500
     Requires:
       ItemCost:

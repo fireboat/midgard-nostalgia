@@ -2342,8 +2342,8 @@ int32 status_base_amotion_pc(map_session_data* sd, struct status_data* status)
 	temp_aspd = (float)(sqrt(temp_aspd) * 0.25f) + 196;
 	if ((skill_lv = pc_checkskill(sd,SA_ADVANCEDBOOK)) > 0 && sd->status.weapon == W_BOOK)
 		val += (skill_lv - 1) / 2 + 1;
-	if ((skill_lv = pc_checkskill(sd, AS_LEFT)) > 0 && sd->weapontype2 == W_DAGGER)
-		val += (skill_lv * 2);
+	if ((skill_lv = pc_checkskill(sd, AS_LEFT)) > 0 && sd->weapontype1 == W_DAGGER && sd->weapontype2 == W_DAGGER)
+		val += (skill_lv);
 	if ((skill_lv = pc_checkskill(sd, SG_DEVIL)) > 0 && ((sd->class_&MAPID_THIRDMASK) == MAPID_STAR_EMPEROR || pc_is_maxjoblv(sd)))
 		val += 1 + skill_lv;
 	if ((skill_lv = pc_checkskill(sd,GS_SINGLEACTION)) > 0 && (sd->status.weapon >= W_REVOLVER && sd->status.weapon <= W_GRENADE))
@@ -2597,7 +2597,7 @@ void status_calc_misc(struct block_list *bl, struct status_data *status, int32 l
 		status->hit = cap_value(stat, 1, SHRT_MAX);
 		// Flee
 		stat = status->flee;
-		stat += level + status->agi + (bl->type == BL_MER ? 0 : bl->type == BL_PC ? status->luk / 5 : 0) + 100; //base level + ( every 1 agi = +1 flee ) + (every 5 luk = +1 flee) + 100
+		stat += level + status->agi + (bl->type == BL_MER ? 0 : bl->type == BL_PC ? status->luk / 5 : 0) + 120; //base level + ( every 1 agi = +1 flee ) + (every 5 luk = +1 flee) + 100
 		stat += 2 * status->con;
 		status->flee = cap_value(stat, 1, SHRT_MAX);
 		// Def2
@@ -3975,8 +3975,11 @@ int32 status_calc_pc_sub(map_session_data* sd, uint8 opt)
 			}
 
 			if(sd->inventory_data[index]->script && (pc_has_permission(sd,PC_PERM_USE_ALL_EQUIPMENT) || !itemdb_isNoEquip(sd->inventory_data[index],sd->bl.m))) {
-				if( i == EQI_HAND_L ) // Shield
+				if (i == EQI_HAND_L) // Shield
+				{
 					sd->state.lr_flag = LR_FLAG_SHIELD;
+					base_status->def2 += sd->inventory_data[index]->def;
+				}
 				run_script(sd->inventory_data[index]->script,0,sd->bl.id,0);
 				if( i == EQI_HAND_L ) // Shield
 					sd->state.lr_flag = LR_FLAG_NONE;
@@ -7280,7 +7283,11 @@ static int16 status_calc_critical(struct block_list *bl, status_change *sc, int3
 	if (sc->getSCE(SC_TRUESIGHT))
 		critical += sc->getSCE(SC_TRUESIGHT)->val2;
 	if (sc->getSCE(SC_CLOAKING))
-		critical += critical;
+	{
+		int32 skill_lv = sc->getSCE(SC_CLOAKING)->val1;
+		if (bl->type == BL_PC && skill_lv > 5)
+			critical += (skill_lv - 5) * 10 * (BL_CAST(BL_PC, bl)->weapontype1 == W_KATAR ? 5 : 10);
+	}
 #ifdef RENEWAL
 	if (sc->getSCE(SC_SPEARQUICKEN))
 		critical += 3*sc->getSCE(SC_SPEARQUICKEN)->val1*10;
@@ -10542,7 +10549,7 @@ int32 status_change_start(struct block_list* src, struct block_list* bl,enum sc_
 #else
 			val2=(val1+1)/2 + val1/10; // Number of counters [Skotlex]
 #endif
-			val3= 50 + (5 * val1); // + 5*val1; // Chance to counter. [Skotlex]
+			val3= 40 + (5 * val1); // + 5*val1; // Chance to counter. [Skotlex]
 			break;
 		case SC_MAGICROD:
 			val2 = val1*20; // SP gained
