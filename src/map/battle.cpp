@@ -7636,10 +7636,12 @@ void battle_do_reflect(int32 attack_type, struct Damage *wd, struct block_list* 
 			) {
 			struct status_change_entry* sce = tsc->getSCE(SC_POISONREACT);
 			if (sstatus->def_ele == ELE_POISON || sstatus->rhw.ele == ELE_POISON || sstatus->lhw.ele == ELE_POISON) {
-				unit_walktobl(target, src, 1, 0);
-				skill_attack(BF_WEAPON, target, target, src, AS_POISONREACT, sce->val1, tick, 0);
-				sc_start2(target,src,SC_POISON,100,sce->val1,AS_POISONREACT,skill_get_time(TF_POISON,skill_lv),1000);
-				--sce->val2;
+				if (unit_walktobl(target, src, tsd->base_status.rhw.range+1, 2))
+				{
+					skill_attack(BF_WEAPON, target, target, src, AS_POISONREACT, sce->val1, tick, 0);
+					sc_start2(target, src, SC_POISON, 100, sce->val1, AS_POISONREACT, skill_get_time(TF_POISON, skill_lv), 1000);
+					sce->val2 -= 2;
+				}
 			}
 			else {
 				skill_attack(BF_WEAPON, target, target, src, TF_POISON, min(pc_checkskill(tsd, TF_POISON), sce->val1), tick, 0);
