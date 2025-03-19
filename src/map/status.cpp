@@ -2346,9 +2346,9 @@ int32 status_base_amotion_pc(map_session_data* sd, struct status_data* status)
 	else if (pc_isridingdragon(sd))
 		val -= 25 - 5 * pc_checkskill(sd, RK_DRAGONTRAINING);
 
-	temp_aspd = (float)(sqrt(temp_aspd) * 0.4f);
-	temp_aspd *= (float)(1000.0f - status_calc_aspd_rate(&sd->bl, &sd->sc, status->aspd_rate))/1000.0f;
-	temp_aspd *= (float)val/100.0f;
+	temp_aspd = (float)(sqrt(temp_aspd) * 0.35f);
+	temp_aspd += temp_aspd * (float)(1000.0f - status_calc_aspd_rate(&sd->bl, &sd->sc, status->aspd_rate))/1000.0f;
+	temp_aspd -= temp_aspd * (float)val/100.0f;
 	temp_aspd += 196;
 
 	aspd = ((int32)(temp_aspd + status_calc_aspd(&sd->bl, &sd->sc, true) - min(aspd, 200)));

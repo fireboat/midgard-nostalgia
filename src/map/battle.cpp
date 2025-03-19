@@ -7157,9 +7157,9 @@ static void battle_calc_attack_left_right_hands(struct Damage* wd, struct block_
 		if(sd->status.weapon == W_KATAR && !skill_id) { 
 			//Katars (offhand damage only applies to normal attacks, tested on Aegis 10.2)
 			skill = pc_checkskill(sd,TF_DOUBLE);
-			skill += pc_checkskill(sd,AS_KATAR);
+			skill += pc_checkskill(sd,AS_KATAR) * 2;
 			// Divined by number of hit when Double Attack is active
-			wd->damage2 = (int64)(wd->damage * (skill * 2)/100) / wd->div_; 
+			wd->damage2 = (int64)(wd->damage * (10+skill)/100) / wd->div_; 
 #ifdef RENEWAL
 		} else if(is_attack_left_handed(src, skill_id) && sd->status.weapon != W_KATAR) {	//Dual-wield
 #else
