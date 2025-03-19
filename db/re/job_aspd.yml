@@ -285,11 +285,11 @@ Body:
       Professor: true
       Baby_Sage: true
     BaseASPD:
-      Fist: 45
+      Fist: 43
       Dagger: 53
       1hSword: 60
       Staff: 55
-      Book: 43
+      Book: 45
       2hStaff: 55
       Shield: 5
   - Jobs:

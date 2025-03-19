@@ -2316,7 +2316,7 @@ int32 status_base_amotion_pc(map_session_data* sd, struct status_data* status)
 	if (job == nullptr)
 		return 0;
 
-	int16 skill_lv, val = 0;
+	int16 val = 0;
 	float temp_aspd = 0;
 
 	int32 aspd = job->aspd_base[sd->weapontype1]; // Single weapon
@@ -2340,20 +2340,18 @@ int32 status_base_amotion_pc(map_session_data* sd, struct status_data* status)
 			temp_aspd = status->dex * status->dex / 5.0f + status->agi * status->agi * 0.5f;
 			break;
 	}
-	temp_aspd = (float)(sqrt(temp_aspd) * 0.25f) + 196;
-	if ((skill_lv = pc_checkskill(sd,SA_ADVANCEDBOOK)) > 0 && sd->status.weapon == W_BOOK)
-		val += (skill_lv - 1) / 2 + 1;
-	if ((skill_lv = pc_checkskill(sd, AS_LEFT)) > 0 && sd->weapontype1 == W_DAGGER && sd->weapontype2 == W_DAGGER)
-		val += (skill_lv);
-	if ((skill_lv = pc_checkskill(sd, SG_DEVIL)) > 0 && ((sd->class_&MAPID_THIRDMASK) == MAPID_STAR_EMPEROR || pc_is_maxjoblv(sd)))
-		val += 1 + skill_lv;
-	if ((skill_lv = pc_checkskill(sd,GS_SINGLEACTION)) > 0 && (sd->status.weapon >= W_REVOLVER && sd->status.weapon <= W_GRENADE))
-		val += ((skill_lv + 1) / 2);
+
 	if (pc_isriding(sd))
 		val -= 50 - 10 * pc_checkskill(sd, KN_CAVALIERMASTERY);
 	else if (pc_isridingdragon(sd))
 		val -= 25 - 5 * pc_checkskill(sd, RK_DRAGONTRAINING);
-	aspd = ((int32)(temp_aspd + ((float)(status_calc_aspd(&sd->bl, &sd->sc, true) + val) * status->agi / 200)) - min(aspd, 200));
+
+	temp_aspd = (float)(sqrt(temp_aspd) * 0.4f);
+	temp_aspd *= 1000/status_calc_aspd_rate(&sd->bl, &sd->sc, status->aspd_rate);
+	temp_aspd -= temp_aspd * val/100;
+	temp_aspd += 196;
+
+	aspd = ((int32)(temp_aspd + status_calc_aspd(&sd->bl, &sd->sc, true) - min(aspd, 200)));
 	return aspd;
 #else
 	if (job == nullptr)
@@ -2598,7 +2596,7 @@ void status_calc_misc(struct block_list *bl, struct status_data *status, int32 l
 		status->hit = cap_value(stat, 1, SHRT_MAX);
 		// Flee
 		stat = status->flee;
-		stat += level + status->agi + (bl->type == BL_MER ? 0 : bl->type == BL_PC ? status->luk / 5 : 0) + 120; //base level + ( every 1 agi = +1 flee ) + (every 5 luk = +1 flee) + 100
+		stat += level + status->agi + (bl->type == BL_MER ? 0 : bl->type == BL_PC ? status->luk / 5 : 0) + 100; //base level + ( every 1 agi = +1 flee ) + (every 5 luk = +1 flee) + 100
 		stat += 2 * status->con;
 		status->flee = cap_value(stat, 1, SHRT_MAX);
 		// Def2
@@ -8028,22 +8026,10 @@ static int16 status_calc_aspd(struct block_list *bl, status_change *sc, bool fix
 		return 0;
 
 	if (fixed) {
-		enum sc_type sc_val;
 
-		if (!sc->getSCE(SC_QUAGMIRE)) {
-			// !TODO: How does Two-Hand Quicken, Adrenaline Rush, and Spear quick change? (+10%)
-			if (bonus < 7 && (sc->getSCE(SC_TWOHANDQUICKEN) || sc->getSCE(SC_ONEHAND) || sc->getSCE(SC_MERC_QUICKEN) || sc->getSCE(SC_ADRENALINE) || sc->getSCE(SC_SPEARQUICKEN)))
-				bonus = 7;
-			else if (bonus < 6 && sc->getSCE(SC_ADRENALINE2))
-				bonus = 6;
-			else if (bonus < 5 && sc->getSCE(SC_FLEET))
-				bonus = 5;
-		}
-
+#ifndef RENEWAL
 		if (sc->getSCE(SC_ASSNCROS) && bonus < sc->getSCE(SC_ASSNCROS)->val2) {
-#ifdef RENEWAL
 			bonus += sc->getSCE(SC_ASSNCROS)->val2;
-#else
 			if (bl->type != BL_PC)
 				bonus += sc->getSCE(SC_ASSNCROS)->val2;
 			else {
@@ -8060,16 +8046,8 @@ static int16 status_calc_aspd(struct block_list *bl, status_change *sc, bool fix
 						break;
 				}
 			}
-#endif
 		}
-
-		if (bonus < 20 && sc->getSCE(SC_MADNESSCANCEL))
-			bonus = 20;
-		else if (bonus < 15 && sc->getSCE(SC_BERSERK))
-			bonus = 15;
-
-		if (sc->getSCE(sc_val = SC_ASPDPOTION3) || sc->getSCE(sc_val = SC_ASPDPOTION2) || sc->getSCE(sc_val = SC_ASPDPOTION1) || sc->getSCE(sc_val = SC_ASPDPOTION0))
-			bonus += sc->getSCE(sc_val)->val1;
+#endif
 	} else {
 		if (bl->type == BL_PC && sc->getSCE(SC_DONTFORGETME))
 			bonus -= sc->getSCE(SC_DONTFORGETME)->val2 / 10;
@@ -8143,6 +8121,12 @@ static int16 status_calc_aspd(struct block_list *bl, status_change *sc, bool fix
 				bonus += skill_lv;
 			if ((skill_lv = pc_checkskill(sd, RG_PLAGIARISM)) > 0)
 				bonus += skill_lv;
+			if ((skill_lv = pc_checkskill(sd, SA_ADVANCEDBOOK)) > 0 && sd->status.weapon == W_BOOK)
+				bonus += (skill_lv - 1) / 2 + 1;
+			if ((skill_lv = pc_checkskill(sd, SG_DEVIL)) > 0 && ((sd->class_&MAPID_THIRDMASK) == MAPID_STAR_EMPEROR || pc_is_maxjoblv(sd)))
+				bonus += 1 + skill_lv;
+			if ((skill_lv = pc_checkskill(sd,GS_SINGLEACTION)) > 0 && (sd->status.weapon >= W_REVOLVER && sd->status.weapon <= W_GRENADE))
+				bonus += ((skill_lv + 1) / 2);
 		}
 	}
 
@@ -10702,6 +10686,7 @@ int32 status_change_start(struct block_list* src, struct block_list* bl,enum sc_
 			break;
 		case SC_ONEHAND:
 		case SC_TWOHANDQUICKEN:
+		case SC_SPEARQUICKEN:
 			val2 = 300;
 			if (val1 > 10) // For boss casted skills [Skotlex]
 				val2 += 20*(val1-10);
