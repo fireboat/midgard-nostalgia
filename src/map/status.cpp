@@ -8027,6 +8027,10 @@ static int16 status_calc_aspd(struct block_list *bl, status_change *sc, bool fix
 		return 0;
 
 	if (fixed) {
+		enum sc_type sc_val;
+
+		if (sc->getSCE(sc_val = SC_ASPDPOTION3) || sc->getSCE(sc_val = SC_ASPDPOTION2) || sc->getSCE(sc_val = SC_ASPDPOTION1) || sc->getSCE(sc_val = SC_ASPDPOTION0))
+			bonus += sc->getSCE(sc_val)->val1;
 
 #ifndef RENEWAL
 		if (sc->getSCE(SC_ASSNCROS) && bonus < sc->getSCE(SC_ASSNCROS)->val2) {
@@ -8244,11 +8248,13 @@ static int16 status_calc_aspd_rate(struct block_list *bl, status_change *sc, int
 	else if (sc->getSCE(SC_MADNESSCANCEL))
 		aspd_rate -= 200;
 
+#ifndef RENEWAL
 	if( sc->getSCE(i=SC_ASPDPOTION3) ||
 		sc->getSCE(i=SC_ASPDPOTION2) ||
 		sc->getSCE(i=SC_ASPDPOTION1) ||
 		sc->getSCE(i=SC_ASPDPOTION0) )
 		aspd_rate -= sc->getSCE(i)->val2;
+#endif
 
 	if(bl->type == BL_PC && sc->getSCE(SC_DONTFORGETME))
 		aspd_rate += sc->getSCE(SC_DONTFORGETME)->val2;
