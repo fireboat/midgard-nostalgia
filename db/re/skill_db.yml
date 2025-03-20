@@ -2271,7 +2271,7 @@ Body:
       TargetTrap: true
     Range: -2
     Hit: Single
-    HitCount: 2
+    HitCount: 1
     Element: Weapon
     SplashArea: 2
     Knockback:
@@ -4960,8 +4960,8 @@ Body:
     Hit: Multi_Hit
     HitCount: -8
     Element: Weapon
-    AfterCastActDelay: 2000
-    AfterCastWalkDelay: 2000
+    AfterCastActDelay: 300
+    AfterCastWalkDelay: 1000
     Duration2: 4500
     Cooldown: 1000
     CastDelayFlags:

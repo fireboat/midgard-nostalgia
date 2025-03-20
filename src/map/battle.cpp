@@ -7488,17 +7488,13 @@ static struct Damage initialize_weapon_data(struct block_list *src, struct block
 			case SG_STAR_WARM:
 				// A random 0~3 knockback bonus is added to the base knockback
 				wd.blewcount += rnd_value(0, 3);
-// 				break;
-// #ifdef RENEWAL
-// 			case KN_BOWLINGBASH:
-// 				if (sd && sd->status.weapon == W_2HSWORD) {
-// 					if (wd.miscflag >= 2 && wd.miscflag <= 3)
-// 						wd.div_ = 3;
-// 					else if (wd.miscflag >= 4)
-// 						wd.div_ = 4;
-// 				}
-// 				break;
-// #endif
+				break;
+#ifdef RENEWAL
+			case KN_BOWLINGBASH:
+				if (wd.miscflag >= 3)
+					wd.div_ = 2;
+				break;
+#endif
 			case KN_AUTOCOUNTER:
 				wd.flag = (wd.flag&~BF_SKILLMASK)|BF_NORMAL;
 				break;
