@@ -4271,13 +4271,14 @@ static void battle_calc_skill_base_damage(struct Damage* wd, struct block_list *
 			if(src->type == BL_HOM)
 				wd->damage = ((TBL_HOM*)src)->homunculus.intimacy ;
 			break;
-
 		default:
 			// Flags that apply to both pre-renewal and renewal
 			bflag = BDMG_NONE;
 			if (is_attack_critical(wd, src, target, skill_id, skill_lv, false)) bflag |= BDMG_CRIT;
 			if (!skill_id && sc && sc->getSCE(SC_CHANGE)) bflag |= BDMG_MAGIC;
 #ifdef RENEWAL
+			// Ignore size calculation for skills that ignore size
+			if (skill_id == AS_SPLASHER) bflag |= BDMG_NOSIZE;
 			if (sd)
 				battle_calc_damage_parts(wd, src, target, skill_id, skill_lv);
 			else {
@@ -6659,6 +6660,7 @@ static void battle_attack_sc_bonus(struct Damage* wd, struct block_list *src, st
 {
 	map_session_data *sd = BL_CAST(BL_PC, src);
 	status_change *sc = status_get_sc(src);
+	status_change *tsc = status_get_sc(target);
 	status_data* sstatus = status_get_status_data(*src);
 	status_data* tstatus = status_get_status_data(*target);
 	uint8 anger_id = 0; // SLS Anger
@@ -6707,6 +6709,10 @@ static void battle_attack_sc_bonus(struct Damage* wd, struct block_list *src, st
 		}
 		if (sc->getSCE(SC_GT_CHANGE))
 			ATK_ADDRATE(wd->damage, wd->damage2, sc->getSCE(SC_GT_CHANGE)->val1);
+		// Poison React Passive: increase on poisoned target.
+		if (sc->getSCE(SC_POISONREACT))
+			if ((tsc->getSCE(SC_POISON) || tsc->getSCE(SC_DPOISON)))
+				ATK_ADDRATE(wd->damage, wd->damage2, (2 * sc->getSCE(SC_POISONREACT)->val1));
 #ifdef RENEWAL
 		if (sc->getSCE(SC_EDP)) {
 			switch(skill_id) {
@@ -7429,8 +7435,8 @@ static struct Damage initialize_weapon_data(struct block_list *src, struct block
 		{
 #ifdef RENEWAL
 			case RG_BACKSTAP:
-				if (sd && sd->status.weapon == W_DAGGER)
-					wd.div_ = 2;
+				// if (sd && sd->status.weapon == W_DAGGER)
+				// 	wd.div_ = 2;
 				break;
 			case MO_CHAINCOMBO:
 				if (sd && sd->status.weapon == W_KNUCKLE)
@@ -7480,17 +7486,17 @@ static struct Damage initialize_weapon_data(struct block_list *src, struct block
 			case SG_STAR_WARM:
 				// A random 0~3 knockback bonus is added to the base knockback
 				wd.blewcount += rnd_value(0, 3);
-				break;
-#ifdef RENEWAL
-			case KN_BOWLINGBASH:
-				if (sd && sd->status.weapon == W_2HSWORD) {
-					if (wd.miscflag >= 2 && wd.miscflag <= 3)
-						wd.div_ = 3;
-					else if (wd.miscflag >= 4)
-						wd.div_ = 4;
-				}
-				break;
-#endif
+// 				break;
+// #ifdef RENEWAL
+// 			case KN_BOWLINGBASH:
+// 				if (sd && sd->status.weapon == W_2HSWORD) {
+// 					if (wd.miscflag >= 2 && wd.miscflag <= 3)
+// 						wd.div_ = 3;
+// 					else if (wd.miscflag >= 4)
+// 						wd.div_ = 4;
+// 				}
+// 				break;
+// #endif
 			case KN_AUTOCOUNTER:
 				wd.flag = (wd.flag&~BF_SKILLMASK)|BF_NORMAL;
 				break;
@@ -7628,8 +7634,8 @@ void battle_do_reflect(int32 attack_type, struct Damage *wd, struct block_list* 
 	}
 
 
-	if (tsc) {
-		if (tsc->getSCE(SC_POISONREACT) &&
+	if (tsc && tsc->getSCE(SC_POISONREACT)) {
+		if (attack_type == BF_WEAPON &&
 			((damage > 0 && rnd() % 100 < tsc->getSCE(SC_POISONREACT)->val3)
 				// Poison React always counter Poison element attacks
 				|| sstatus->rhw.ele == ELE_POISON || sstatus->lhw.ele == ELE_POISON
@@ -7849,15 +7855,6 @@ static struct Damage battle_calc_weapon_attack(struct block_list *src, struct bl
 
 			if (sd->status.weapon == W_KATAR && (katar_skill = pc_checkskill(sd, ASC_KATAR)) > 0) // Adv. Katar Mastery applied after calculate with skillratio.
 				ATK_ADDRATE(wd.damage, wd.damage2, (10 + 2 * katar_skill));
-
-			// Poison React Passive: increase on poisoned target.
-			if (tsc)
-			{
-				if ((tsc->getSCE(SC_POISON) || tsc->getSCE(SC_DPOISON)) && sc->getSCE(SC_POISONREACT))
-				{
-					ATK_ADDRATE(wd.damage, wd.damage2, (2 * sc->getSCE(SC_POISONREACT)->val1));
-				}
-			}	
 		}
 
 		// Res reduces physical damage by a percentage and
@@ -9651,7 +9648,7 @@ struct Damage battle_calc_misc_attack(struct block_list *src,struct block_list *
 				if(!sd || !(skill = pc_checkskill(sd,HT_STEELCROW)))
 					skill = 0;
 #ifdef RENEWAL
-				md.damage = (sstatus->dex / 10 + sstatus->agi / 2 + skill * 3 + 40) * 2;
+				md.damage = (sstatus->dex / 10 + sstatus->int_ / 2 + skill * 3 + 40) * 2;
 				RE_LVL_MDMOD(100);
 #else
 				md.damage = (sstatus->dex / 10 + sstatus->int_ / 2 + skill * 3 + 40) * 2;
