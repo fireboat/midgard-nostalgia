@@ -2489,26 +2489,6 @@ int32 unit_skilluse_id2(struct block_list *src, int32 target_id, uint16 skill_id
 	// Apply cast time and general delays
 	unit_set_castdelay(*ud, tick, (skill_get_cast(skill_id, skill_lv) != 0) ? casttime : 0);
 
-	if( sc ) {
-		// These 3 status do not stack, so it's efficient to use if-else
- 		if( sc->getSCE(SC_CLOAKING) && !(sc->getSCE(SC_CLOAKING)->val4&4) && skill_id != AS_CLOAKING && skill_id != SHC_SHADOW_STAB) {
-			status_change_end(src, SC_CLOAKING);
-
-			if (!src->prev)
-				return 0; // Warped away!
-		} else if( sc->getSCE(SC_CLOAKINGEXCEED) && !(sc->getSCE(SC_CLOAKINGEXCEED)->val4&4) && skill_id != GC_CLOAKINGEXCEED && skill_id != SHC_SHADOW_STAB  && skill_id != SHC_SAVAGE_IMPACT ) {
-			status_change_end(src,SC_CLOAKINGEXCEED);
-
-			if (!src->prev)
-				return 0;
-		} else if (sc->getSCE(SC_NEWMOON) && skill_id != SJ_NEWMOONKICK) {
-			status_change_end(src, SC_NEWMOON);
-			if (!src->prev)
-				return 0; // Warped away!
-		}
-	}
-
-
 	if( casttime > 0 ) {
 		ud->skilltimer = add_timer( tick+casttime, skill_castend_id, src->id, 0 );
 
@@ -2516,6 +2496,31 @@ int32 unit_skilluse_id2(struct block_list *src, int32 target_id, uint16 skill_id
 			status_calc_bl(&sd->bl, { SCB_SPEED, SCB_ASPD });
 	} else
 		skill_castend_id(ud->skilltimer,tick,src->id,0);
+
+	if (sc)
+	{
+		// These 3 status do not stack, so it's efficient to use if-else
+		if (sc->getSCE(SC_CLOAKING) && !(sc->getSCE(SC_CLOAKING)->val4 & 4) && skill_id != AS_CLOAKING && skill_id != SHC_SHADOW_STAB)
+		{
+			status_change_end(src, SC_CLOAKING);
+
+			if (!src->prev)
+				return 0; // Warped away!
+		}
+		else if (sc->getSCE(SC_CLOAKINGEXCEED) && !(sc->getSCE(SC_CLOAKINGEXCEED)->val4 & 4) && skill_id != GC_CLOAKINGEXCEED && skill_id != SHC_SHADOW_STAB && skill_id != SHC_SAVAGE_IMPACT)
+		{
+			status_change_end(src, SC_CLOAKINGEXCEED);
+
+			if (!src->prev)
+				return 0;
+		}
+		else if (sc->getSCE(SC_NEWMOON) && skill_id != SJ_NEWMOONKICK)
+		{
+			status_change_end(src, SC_NEWMOON);
+			if (!src->prev)
+				return 0; // Warped away!
+		}
+	}
 
 	if( sd && battle_config.prevent_logout_trigger&PLT_SKILL )
 		sd->canlog_tick = gettick();
@@ -2677,26 +2682,6 @@ int32 unit_skilluse_pos2( struct block_list *src, int16 skill_x, int16 skill_y, 
 	// Apply cast time and general delays
 	unit_set_castdelay(*ud, tick, (skill_get_cast(skill_id, skill_lv) != 0) ? casttime : 0);
 
-	if( sc ) {
-		// These 3 status do not stack, so it's efficient to use if-else
-		if (sc->getSCE(SC_CLOAKING) && !(sc->getSCE(SC_CLOAKING)->val4&4)) {
-			status_change_end(src, SC_CLOAKING);
-
-			if (!src->prev)
-				return 0; // Warped away!
-		} else if (sc->getSCE(SC_CLOAKINGEXCEED) && !(sc->getSCE(SC_CLOAKINGEXCEED)->val4&4)) {
-			status_change_end(src, SC_CLOAKINGEXCEED);
-
-			if (!src->prev)
-				return 0;
-		} else if (sc->getSCE(SC_NEWMOON)) {
-			status_change_end(src, SC_NEWMOON);
-
-			if (!src->prev)
-				return 0;
-		}
-	}
-
 	unit_stop_walking( src, USW_FIXPOS );
 
 	// SC_MAGICPOWER needs to switch states at start of cast
@@ -2715,6 +2700,26 @@ int32 unit_skilluse_pos2( struct block_list *src, int16 skill_x, int16 skill_y, 
 	} else {
 		ud->skilltimer = INVALID_TIMER;
 		skill_castend_pos(ud->skilltimer,tick,src->id,0);
+	}
+
+	if( sc ) {
+		// These 3 status do not stack, so it's efficient to use if-else
+		if (sc->getSCE(SC_CLOAKING) && !(sc->getSCE(SC_CLOAKING)->val4&4)) {
+			status_change_end(src, SC_CLOAKING);
+
+			if (!src->prev)
+				return 0; // Warped away!
+		} else if (sc->getSCE(SC_CLOAKINGEXCEED) && !(sc->getSCE(SC_CLOAKINGEXCEED)->val4&4)) {
+			status_change_end(src, SC_CLOAKINGEXCEED);
+
+			if (!src->prev)
+				return 0;
+		} else if (sc->getSCE(SC_NEWMOON)) {
+			status_change_end(src, SC_NEWMOON);
+
+			if (!src->prev)
+				return 0;
+		}
 	}
 
 	if( sd && battle_config.prevent_logout_trigger&PLT_SKILL )

@@ -2346,7 +2346,7 @@ int32 status_base_amotion_pc(map_session_data* sd, struct status_data* status)
 	else if (pc_isridingdragon(sd))
 		val -= 25 - 5 * pc_checkskill(sd, RK_DRAGONTRAINING);
 
-	temp_aspd = (float)(sqrt(temp_aspd) * 0.35f);
+	temp_aspd = (float)(sqrt(temp_aspd) * 0.3f);
 	temp_aspd += temp_aspd * (float)(1000.0f - status_calc_aspd_rate(&sd->bl, &sd->sc, status->aspd_rate))/1000.0f;
 	temp_aspd -= temp_aspd * (float)val/100.0f;
 	temp_aspd += 196;
@@ -10547,7 +10547,7 @@ int32 status_change_start(struct block_list* src, struct block_list* bl,enum sc_
 #else
 			val2=(val1+1)/2 + val1/10; // Number of counters [Skotlex]
 #endif
-			val3= 40 + (5 * val1); // + 5*val1; // Chance to counter. [Skotlex]
+			val3= 10 + (2 * val1); // + 5*val1; // Chance to counter. [Skotlex]
 			break;
 		case SC_MAGICROD:
 			val2 = val1*20; // SP gained

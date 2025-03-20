@@ -2377,14 +2377,14 @@ static int32 battle_calc_sizefix(int64 damage, map_session_data *sd, unsigned ch
  * @param sd Player
  * @return Base weapon damage
  */
-static int32 battle_calc_base_weapon_attack(struct block_list *src, struct status_data *tstatus, struct weapon_atk *wa, map_session_data *sd, bool critical)
+static int32 battle_calc_base_weapon_attack(struct block_list *src, struct status_data *tstatus, struct weapon_atk *wa, map_session_data *sd, bool critical, bool ignoreSizePenalty = false)
 {
 	status_data* status = status_get_status_data(*src);
 	uint8 type = (wa == &status->lhw)?EQI_HAND_L:EQI_HAND_R;
 	uint16 atkmin = (type == EQI_HAND_L)?status->watk2:status->watk;
 	uint16 atkmax = atkmin;
 	int64 damage = atkmin;
-	bool weapon_perfection = false;
+	bool weapon_perfection = false || ignoreSizePenalty;
 	status_change *sc = status_get_sc(src);
 
 	if (sd && sd->equip_index[type] >= 0 && sd->inventory_data[sd->equip_index[type]]) {
@@ -2449,7 +2449,7 @@ static int32 battle_calc_base_weapon_attack(struct block_list *src, struct statu
  *	Initial refactoring by Baalberith
  *	Refined and optimized by helvetica
  */
-static int64 battle_calc_base_damage(struct block_list *src, struct status_data *status, struct weapon_atk *wa, status_change *sc, uint16 t_size, int32 flag)
+static int64 battle_calc_base_damage(struct block_list *src, struct status_data *status, struct weapon_atk *wa, status_change *sc, uint16 t_size, int32 flag = BDMG_NONE)
 {
 	uint32 atkmin = 0, atkmax = 0;
 	int16 type = 0;
@@ -4025,7 +4025,7 @@ static void battle_calc_attack_masteries(struct Damage* wd, struct block_list *s
  *	Initial refactoring by Baalberith
  *	Refined and optimized by helvetica
  */
-static void battle_calc_damage_parts(struct Damage* wd, struct block_list *src,struct block_list *target,uint16 skill_id,uint16 skill_lv)
+static void battle_calc_damage_parts(struct Damage* wd, struct block_list *src,struct block_list *target,uint16 skill_id,uint16 skill_lv,uint16 bflag = BDMG_NONE)
 {
 	status_data* sstatus = status_get_status_data(*src);
 	status_data* tstatus = status_get_status_data(*target);
@@ -4054,8 +4054,8 @@ static void battle_calc_damage_parts(struct Damage* wd, struct block_list *src,s
 	if (wd->type == DMG_MULTI_HIT_CRITICAL || wd->type == DMG_CRITICAL)
 		critical = true;
 
-	wd->weaponAtk += battle_calc_base_weapon_attack(src, tstatus, &sstatus->rhw, sd, critical);
-	wd->weaponAtk2 += battle_calc_base_weapon_attack(src, tstatus, &sstatus->lhw, sd, critical);
+	wd->weaponAtk += battle_calc_base_weapon_attack(src, tstatus, &sstatus->rhw, sd, critical, bflag&BDMG_NOSIZE);
+	wd->weaponAtk2 += battle_calc_base_weapon_attack(src, tstatus, &sstatus->lhw, sd, critical, bflag&BDMG_NOSIZE);
 
 	// Weapon ATK gain bonus from SC_SUB_WEAPONPROPERTY here ( +x% pseudo element damage)
 	if (sd && sd->sc.getSCE(SC_SUB_WEAPONPROPERTY)) {
@@ -4276,11 +4276,10 @@ static void battle_calc_skill_base_damage(struct Damage* wd, struct block_list *
 			bflag = BDMG_NONE;
 			if (is_attack_critical(wd, src, target, skill_id, skill_lv, false)) bflag |= BDMG_CRIT;
 			if (!skill_id && sc && sc->getSCE(SC_CHANGE)) bflag |= BDMG_MAGIC;
-#ifdef RENEWAL
-			// Ignore size calculation for skills that ignore size
 			if (skill_id == AS_SPLASHER) bflag |= BDMG_NOSIZE;
+#ifdef RENEWAL
 			if (sd)
-				battle_calc_damage_parts(wd, src, target, skill_id, skill_lv);
+				battle_calc_damage_parts(wd, src, target, skill_id, skill_lv, bflag);
 			else {
 				wd->damage = battle_calc_base_damage(src, sstatus, &sstatus->rhw, sc, tstatus->size, bflag);
 				if (is_attack_left_handed(src, skill_id))
@@ -4403,7 +4402,7 @@ static void battle_calc_multi_attack(struct Damage* wd, struct block_list *src,s
 	status_change *tsc = status_get_sc(target);
 	status_data* tstatus = status_get_status_data(*target);
 
-	if( sd && !skill_id || skill_id == AS_POISONREACT) {	// if no skill_id passed, check for double attack [helvetica]
+	if( sd && (!skill_id || skill_id == AS_POISONREACT || skill_id == KN_AUTOCOUNTER)) {	// if no skill_id passed, check for double attack [helvetica]
 		int16 i;
 		if(sc && sc->getSCE(SC_FEARBREEZE) && sd->weapontype1==W_BOW
 			&& (i = sd->equip_index[EQI_AMMO]) >= 0 && sd->inventory_data[i] && sd->inventory.u.items_inventory[i].amount > 1)
@@ -4707,6 +4706,9 @@ static int32 battle_calc_attack_skill_ratio(struct Damage* wd, struct block_list
 				if(skill_lv > 9 && wd->miscflag == 2)
 					skillratio += ratio / 2;
 			}
+			break;
+		case KN_AUTOCOUNTER:
+			skillratio += 100;
 			break;
 		case KN_BOWLINGBASH:
 		case MS_BOWLINGBASH:
@@ -7633,28 +7635,46 @@ void battle_do_reflect(int32 attack_type, struct Damage *wd, struct block_list* 
 		}
 	}
 
+	if (tsc)
+	{
+		uint8 dir = map_calc_dir(target, src->x, src->y);
+		int32 t_dir = unit_getdir(target);
+		int32 dist = distance_bl(src, target);
 
-	if (tsc && tsc->getSCE(SC_POISONREACT)) {
-		if (attack_type == BF_WEAPON &&
-			((damage > 0 && rnd() % 100 < tsc->getSCE(SC_POISONREACT)->val3)
-				// Poison React always counter Poison element attacks
-				|| sstatus->rhw.ele == ELE_POISON || sstatus->lhw.ele == ELE_POISON
-				|| sstatus->def_ele == ELE_POISON)
-			//check_distance_bl(src, target, tstatus->rhw.range+1) && Doesn't checks range! o.O;
-			&& status_check_skilluse(target, src, TF_POISON, 0)
-			) {
-			struct status_change_entry* sce = tsc->getSCE(SC_POISONREACT);
-			// Move to target if it's not in range
-			if (unit_walktobl(target, src, tsd->base_status.rhw.range + 1, 2))
-			{
+		if (tsc->getSCE(SC_AUTOCOUNTER) && attack_type == BF_WEAPON && status_check_skilluse(target, src, KN_AUTOCOUNTER, 1)) {
+			if (dist <= 0 || (!map_check_dir(dir, t_dir) && dist <= tsd->base_status.rhw.range+1)) {
+				uint16 skill_lv = tsc->getSCE(SC_AUTOCOUNTER)->val1;
+
+				clif_skillcastcancel(*target); //Remove the casting bar. [Skotlex]
+				clif_damage(*src, *target, tick, sstatus->amotion, 1, 0, 1, DMG_NORMAL, 0, false); //Display MISS.
+				status_change_end(target, SC_AUTOCOUNTER);
+				skill_attack(BF_WEAPON, target, target, src, KN_AUTOCOUNTER, skill_lv, tick, 0);
+				wd->dmg_lv = ATK_BLOCK;
+			}
+		}
+
+		if (tsc->getSCE(SC_POISONREACT)) {
+			if (attack_type == BF_WEAPON &&
+				((damage > 0 && rnd() % 100 < tsc->getSCE(SC_POISONREACT)->val3)
+					// Poison React always counter Poison element attacks
+					|| sstatus->rhw.ele == ELE_POISON || sstatus->lhw.ele == ELE_POISON
+					|| sstatus->def_ele == ELE_POISON)
+				//check_distance_bl(src, target, tstatus->rhw.range+1) && Doesn't checks range! o.O;
+				&& status_check_skilluse(target, src, TF_POISON, 0)
+				&& dist <= 0 || (!map_check_dir(dir, t_dir) && dist <= tsd->base_status.rhw.range + 1)) {
+				struct status_change_entry* sce = tsc->getSCE(SC_POISONREACT);
 				if (sstatus->def_ele == ELE_POISON || sstatus->rhw.ele == ELE_POISON || sstatus->lhw.ele == ELE_POISON) {
+					clif_damage(*src, *target, tick, sstatus->amotion, 1, 0, 1, DMG_NORMAL, 0, false); //Display MISS.
 					skill_attack(BF_WEAPON, target, target, src, AS_POISONREACT, sce->val1, tick, 0);
 					sc_start2(target, src, SC_POISON, 100, sce->val1, AS_POISONREACT, skill_get_time(TF_POISON, skill_lv), 1000);
 					sce->val2 -= 2;
+					wd->dmg_lv = ATK_BLOCK;
 				}
 				else {
+					clif_damage(*src, *target, tick, sstatus->amotion, 1, 0, 1, DMG_NORMAL, 0, false); //Display MISS.
 					skill_attack(BF_WEAPON, target, target, src, TF_POISON, min(pc_checkskill(tsd, TF_POISON), sce->val1), tick, 0);
 					--sce->val2;
+					wd->dmg_lv = ATK_BLOCK;
 				}
 
 				if (sce->val2 <= 0)
@@ -10473,21 +10493,6 @@ enum damage_lv battle_weapon_attack(struct block_list* src, struct block_list* t
 						break;
 				}
 			}
-		}
-	}
-	if (tsc && tsc->getSCE(SC_AUTOCOUNTER) && status_check_skilluse(target, src, KN_AUTOCOUNTER, 1)) {
-		uint8 dir = map_calc_dir(target,src->x,src->y);
-		int32 t_dir = unit_getdir(target);
-		int32 dist = distance_bl(src, target);
-
-		if (dist <= 0 || (!map_check_dir(dir,t_dir) && dist <= tstatus->rhw.range+1)) {
-			uint16 skill_lv = tsc->getSCE(SC_AUTOCOUNTER)->val1;
-
-			clif_skillcastcancel( *target ); //Remove the casting bar. [Skotlex]
-			clif_damage(*src, *target, tick, sstatus->amotion, 1, 0, 1, DMG_NORMAL, 0, false); //Display MISS.
-			status_change_end(target, SC_AUTOCOUNTER);
-			skill_attack(BF_WEAPON,target,target,src,KN_AUTOCOUNTER,skill_lv,tick,0);
-			return ATK_BLOCK;
 		}
 	}
 
