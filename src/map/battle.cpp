@@ -4443,7 +4443,7 @@ static void battle_calc_multi_attack(struct Damage* wd, struct block_list *src,s
 				max_rate = sc->getSCE(SC_KAGEMUSYA)->val1 * 10; // Same rate as even levels of TF_DOUBLE
 			else
 #ifdef RENEWAL
-				max_rate = max(5 * skill_lv, sd->bonus.double_rate);
+				max_rate = max(7 * skill_lv / (sd->weapontype1 != W_DAGGER ? 2 : 1), sd->bonus.double_rate); // Half success change if not a dagger.
 #else
 				max_rate = max(5 * skill_lv, sd->bonus.double_rate);
 #endif
@@ -7160,7 +7160,7 @@ static void battle_calc_attack_left_right_hands(struct Damage* wd, struct block_
 			skill = pc_checkskill(sd,TF_DOUBLE);
 			skill += pc_checkskill(sd,AS_KATAR) * 2;
 			// Divined by number of hit when Double Attack is active
-			wd->damage2 = (int64)(wd->damage * (10+skill)/100) / wd->div_; 
+			wd->damage2 = (int64)(wd->damage * (5+skill)/100) / wd->div_; 
 #ifdef RENEWAL
 		} else if(is_attack_left_handed(src, skill_id) && sd->status.weapon != W_KATAR) {	//Dual-wield
 #else
@@ -7792,8 +7792,8 @@ static struct Damage battle_calc_weapon_attack(struct block_list *src, struct bl
 			wd.weaponAtk += battle_calc_cardfix(BF_WEAPON, src, target, nk, right_element, left_element, wd.weaponAtk, 2, wd.flag);
 			wd.equipAtk += battle_calc_cardfix(BF_WEAPON, src, target, nk, right_element, left_element, wd.equipAtk, 2, wd.flag);
 			if (is_attack_left_handed(src, skill_id)) {
-				wd.weaponAtk2 += battle_calc_cardfix(BF_WEAPON, src, target, nk, right_element, left_element, wd.weaponAtk2, 3, wd.flag);
-				wd.equipAtk2 += battle_calc_cardfix(BF_WEAPON, src, target, nk, right_element, left_element, wd.equipAtk2, 3, wd.flag);
+				wd.weaponAtk2 += battle_calc_cardfix(BF_WEAPON, src, target, nk, right_element, left_element, wd.weaponAtk2, 2, wd.flag);
+				wd.equipAtk2 += battle_calc_cardfix(BF_WEAPON, src, target, nk, right_element, left_element, wd.equipAtk2, 2, wd.flag);
 			}
 		}
 

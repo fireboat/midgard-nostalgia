@@ -4158,6 +4158,23 @@ Body:
           Amount: 29
         - Level: 5
           Amount: 32
+      Weapon:
+        Fist: true
+        Dagger: true
+        1hSword: true
+        2hSword: true
+        1hSpear: true
+        2hSpear: true
+        1hAxe: true
+        2hAxe: true
+        Mace: true
+        2hMace: true
+        Staff: true
+        Knuckle: true
+        Musical: true
+        Whip: true
+        Book: true
+        Katar: true
     Status: Adrenaline
   - Id: 112
     Name: BS_WEAPONPERFECT

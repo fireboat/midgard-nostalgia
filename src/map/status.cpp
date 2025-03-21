@@ -8053,7 +8053,33 @@ static int16 status_calc_aspd(struct block_list *bl, status_change *sc, bool fix
 		}
 #endif
 	} else {
-		if (bl->type == BL_PC && sc->getSCE(SC_DONTFORGETME))
+
+		if (sc->getSCE(SC_TWOHANDQUICKEN) || sc->getSCE(SC_ONEHAND) || sc->getSCE(SC_MERC_QUICKEN)
+			|| sc->getSCE(SC_ADRENALINE) || sc->getSCE(SC_ADRENALINE2) || sc->getSCE(SC_SPEARQUICKEN)
+			|| sc->getSCE(SC_GATLINGFEVER))
+			bonus += 10;
+
+		if (sc->getSCE(SC_ASSNCROS) && bonus < sc->getSCE(SC_ASSNCROS)->val2) {
+			if (bl->type != BL_PC)
+				bonus = sc->getSCE(SC_ASSNCROS)->val2;
+			else
+				switch (((TBL_PC*)bl)->status.weapon) {
+				case W_BOW:
+				case W_REVOLVER:
+				case W_RIFLE:
+				case W_GATLING:
+				case W_SHOTGUN:
+				case W_GRENADE:
+					break;
+				default:
+					bonus = sc->getSCE(SC_ASSNCROS)->val2;
+				}
+		}
+
+		if (sc->getSCE(SC_INVINCIBLE))
+			bonus = sc->getSCE(SC_INVINCIBLE)->val4;
+
+		if (bl->type&BL_PC && sc->getSCE(SC_DONTFORGETME))
 			bonus -= sc->getSCE(SC_DONTFORGETME)->val2 / 10;
 #ifdef RENEWAL
 		if (sc->getSCE(SC_ENSEMBLEFATIGUE))
@@ -8125,6 +8151,10 @@ static int16 status_calc_aspd(struct block_list *bl, status_change *sc, bool fix
 				bonus += skill_lv;
 			if ((skill_lv = pc_checkskill(sd, RG_PLAGIARISM)) > 0)
 				bonus += skill_lv;
+			if ((skill_lv = pc_checkskill(sd, AS_RIGHT)) > 0 && sd->weapontype2 == W_DAGGER)
+				bonus += skill_lv;
+			if ((skill_lv = pc_checkskill(sd, AS_LEFT)) > 0 && sd->weapontype2 == W_DAGGER)
+				bonus += skill_lv;
 			if ((skill_lv = pc_checkskill(sd, SA_ADVANCEDBOOK)) > 0 && sd->status.weapon == W_BOOK)
 				bonus += (skill_lv - 1) / 2 + 1;
 			if ((skill_lv = pc_checkskill(sd, SG_DEVIL)) > 0 && ((sd->class_&MAPID_THIRDMASK) == MAPID_STAR_EMPEROR || pc_is_maxjoblv(sd)))
@@ -8179,8 +8209,6 @@ static int16 status_calc_fix_aspd(struct block_list *bl, status_change *sc, int3
  */
 static int16 status_calc_aspd_rate(struct block_list *bl, status_change *sc, int32 aspd_rate)
 {
-	int32 i;
-
 	if(sc == nullptr || sc->empty())
 		return cap_value(aspd_rate,0,SHRT_MAX);
 
@@ -9956,7 +9984,6 @@ int32 status_change_start(struct block_list* src, struct block_list* bl,enum sc_
 			break;
 		case SC_STONE:
 		case SC_STONEWAIT:
-		case SC_FREEZE:
 		case SC_POISON:
 			// Undead are immune to Freeze/Stone
 			if (undead_flag && !(flag&SCSTART_NOAVOID))
