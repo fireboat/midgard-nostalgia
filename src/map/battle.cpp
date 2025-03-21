@@ -1226,6 +1226,8 @@ bool battle_status_block_damage(struct block_list *src, struct block_list *targe
 	if (!src || !target || !sc || !d)
 		return true;
 
+	status_data* sstatus = status_get_status_data(*src);
+	status_data* tstatus = status_get_status_data(*target);
 	status_change_entry *sce;
 	int32 flag = d->flag;
 
@@ -1244,7 +1246,6 @@ bool battle_status_block_damage(struct block_list *src, struct block_list *targe
 
 	int32 element;
 	if (flag & BF_WEAPON) {
-		status_data* sstatus = status_get_status_data(*src);
 		if(sstatus->rhw.ele == ELE_NEUTRAL && sstatus->lhw.ele > sstatus->rhw.ele)
 			element = battle_get_weapon_element(d, src, target, skill_id, skill_lv, EQI_HAND_L, false);
 		else
@@ -1464,15 +1465,7 @@ bool battle_status_block_damage(struct block_list *src, struct block_list *targe
 	if ((sce = sc->getSCE(SC_AUTOGUARD)) && flag&BF_WEAPON && rnd() % 100 < sce->val2 && !skill_get_inf2(skill_id, INF2_IGNOREAUTOGUARD)) {
 		status_change_entry *sce_d = sc->getSCE(SC_DEVOTION);
 		block_list *d_bl;
-		int32 delay;
-
-		// different delay depending on skill level [celest]
-		if (sce->val1 <= 5)
-			delay = 300;
-		else if (sce->val1 > 5 && sce->val1 <= 9)
-			delay = 200;
-		else
-			delay = 100;
+		int32 delay = sstatus->amotion;
 
 		map_session_data *sd = map_id2sd(target->id);
 
@@ -1485,7 +1478,7 @@ bool battle_status_block_damage(struct block_list *src, struct block_list *targe
 		{ //If player is target of devotion, show guard effect on the devotion caster rather than the target
 			clif_skill_nodamage(d_bl, *d_bl, CR_AUTOGUARD, sce->val1);
 			unit_set_walkdelay(d_bl, gettick(), delay, 1);
-			d->dmg_lv = ATK_MISS;
+			d->dmg_lv = ATK_BLOCK;
 			return false;
 		} else {
 			clif_skill_nodamage(target, *target, CR_AUTOGUARD, sce->val1);
@@ -1497,7 +1490,7 @@ bool battle_status_block_damage(struct block_list *src, struct block_list *targe
 			if (sc->getSCE(SC_SHRINK) && rnd() % 100 < 5 * sce->val1)
 				skill_blown(target, src, skill_get_blewcount(CR_SHRINK, 1), -1, BLOWN_NONE);
 #endif
-			d->dmg_lv = ATK_MISS;
+			d->dmg_lv = ATK_BLOCK;
 			return false;
 		}
 	}
@@ -3009,7 +3002,7 @@ static bool is_attack_critical(struct Damage* wd, struct block_list *src, struct
 					(battle_config.auto_counter_type&src->type))
 					return true;
 				else
-					cri *= 2;
+					cri += 50;
 				break;
 			case SN_SHARPSHOOTING:
 			case MA_SHARPSHOOTING:
@@ -4708,7 +4701,7 @@ static int32 battle_calc_attack_skill_ratio(struct Damage* wd, struct block_list
 			}
 			break;
 		case KN_AUTOCOUNTER:
-			skillratio += 100;
+			skillratio += 20 * skill_lv;
 			break;
 		case KN_BOWLINGBASH:
 		case MS_BOWLINGBASH:
@@ -7409,8 +7402,8 @@ static struct Damage initialize_weapon_data(struct block_list *src, struct block
 	wd.div_ = skill_id?skill_get_num(skill_id,skill_lv):1;
 	wd.amotion = (skill_id && skill_get_inf(skill_id)&INF_GROUND_SKILL)?0:sstatus->amotion; //Amotion should be 0 for ground skills.
 	// counter attack DOES obey ASPD delay on official, uncomment if you want the old (bad) behavior [helvetica]
-	/*if(skill_id == KN_AUTOCOUNTER)
-		wd.amotion /= 2; */
+	if(skill_id == KN_AUTOCOUNTER || skill_id == AS_POISONREACT)
+		wd.amotion /= 2;
 	wd.dmotion = tstatus->dmotion;
 	wd.blewcount =skill_get_blewcount(skill_id,skill_lv);
 	wd.miscflag = wflag;
@@ -7592,8 +7585,60 @@ void battle_do_reflect(int32 attack_type, struct Damage *wd, struct block_list* 
 	map_session_data* tsd = BL_CAST(BL_PC, target);
 	status_change* tsc = status_get_sc(target);
 	status_data* sstatus = status_get_status_data(*src);
+	status_data* tstatus = status_get_status_data(*target);
 	struct unit_data* ud = unit_bl2ud(target);
 	t_tick tick = gettick(), rdelay = 0;
+
+	if (auto* sce = tsc->getSCE(SC_AUTOCOUNTER))
+	{
+		if (attack_type|BF_WEAPON|BF_SKILLMASK && status_check_skilluse(target, src, KN_AUTOCOUNTER, 1)) {
+
+			uint8 dir = map_calc_dir(target, src->x, src->y);
+			int32 t_dir = unit_getdir(target);
+
+			if (!map_check_dir(dir, t_dir) && check_distance_bl(src, target, tstatus->rhw.range + 1)) {
+				clif_skillcastcancel(*target); //Remove the casting bar. [Skotlex]
+				status_change_end(target, SC_AUTOCOUNTER);
+				skill_attack(BF_WEAPON, target, target, src, KN_AUTOCOUNTER, sce->val1, gettick(), 0);
+				wd->dmg_lv = ATK_BLOCK;
+				wd->damage = wd->damage2 = 0;
+				return;
+			}
+		}
+	}
+
+	if (auto* sce = tsc->getSCE(SC_POISONREACT)) {
+		if (attack_type|BF_WEAPON|BF_SKILLMASK && ((damage > 0)
+			// Poison React always counter Poison element attacks
+			|| sstatus->rhw.ele == ELE_POISON || sstatus->def_ele == ELE_POISON)
+			&& sce->val2 > 0
+			&& status_check_skilluse(target, src, TF_POISON, 0)
+			&& check_distance_bl(src, target, tstatus->rhw.range + 1))
+		{
+			if (sstatus->def_ele == ELE_POISON || sstatus->rhw.ele == ELE_POISON) {
+				skill_attack(BF_WEAPON, target, target, src, AS_POISONREACT, sce->val1, gettick(), 0);
+				sc_start2(target, src, SC_POISON, 100, sce->val1, AS_POISONREACT, skill_get_time(TF_POISON, skill_lv), 1000);
+				sce->val2 -= 2;
+			}
+			else {
+				map_session_data* sd = map_id2sd(target->id);
+				skill_attack(BF_WEAPON, target, target, src, TF_POISON, min(pc_checkskill(sd, TF_POISON), sce->val1), gettick(), 0);
+				--sce->val2;
+			}
+
+			if (rnd() % 100 < sce->val3)
+			{
+				wd->dmg_lv = ATK_MISS;
+				wd->damage = wd->damage2 = 0;
+				clif_specialeffect(target, EF_PURPLEBODY, SELF);
+			}
+
+			if (sce->val2 <= 0)
+				status_change_end(target, SC_POISONREACT);
+
+			return;
+		}
+	}
 
 	// Don't reflect your own damage (Grand Cross)
 	if ((wd->damage + wd->damage2) && src && target && src != target && (src->type != BL_SKILL ||
@@ -7627,54 +7672,6 @@ void battle_do_reflect(int32 attack_type, struct Damage *wd, struct block_list* 
 				// It appears that official servers give skill reflect damage a longer delay
 				battle_delay_damage(tick, wd->amotion, target, (!d_bl) ? src : d_bl, 0, CR_REFLECTSHIELD, 0, rdamage, ATK_DEF, rdelay ,true, false);
 				skill_additional_effect(target, (!d_bl) ? src : d_bl, CR_REFLECTSHIELD, 1, BF_WEAPON|BF_SHORT|BF_NORMAL, ATK_DEF, tick);
-			}
-		}
-	}
-
-	if (tsc)
-	{
-		uint8 dir = map_calc_dir(target, src->x, src->y);
-		int32 t_dir = unit_getdir(target);
-		int32 dist = distance_bl(src, target);
-
-		if (tsc->getSCE(SC_AUTOCOUNTER) && attack_type == BF_WEAPON && status_check_skilluse(target, src, KN_AUTOCOUNTER, 1)) {
-			if (dist <= 0 || (!map_check_dir(dir, t_dir) && dist <= tsd->base_status.rhw.range+1)) {
-				uint16 skill_lv = tsc->getSCE(SC_AUTOCOUNTER)->val1;
-
-				clif_skillcastcancel(*target); //Remove the casting bar. [Skotlex]
-				clif_damage(*src, *target, tick, sstatus->amotion, 1, 0, 1, DMG_NORMAL, 0, false); //Display MISS.
-				status_change_end(target, SC_AUTOCOUNTER);
-				skill_attack(BF_WEAPON, target, target, src, KN_AUTOCOUNTER, skill_lv, tick, 0);
-				wd->dmg_lv = ATK_BLOCK;
-			}
-		}
-
-		if (tsc->getSCE(SC_POISONREACT)) {
-			if (attack_type == BF_WEAPON &&
-				((damage > 0 && rnd() % 100 < tsc->getSCE(SC_POISONREACT)->val3)
-					// Poison React always counter Poison element attacks
-					|| sstatus->rhw.ele == ELE_POISON || sstatus->lhw.ele == ELE_POISON
-					|| sstatus->def_ele == ELE_POISON)
-				//check_distance_bl(src, target, tstatus->rhw.range+1) && Doesn't checks range! o.O;
-				&& status_check_skilluse(target, src, TF_POISON, 0)
-				&& dist <= 0 || (!map_check_dir(dir, t_dir) && dist <= tsd->base_status.rhw.range + 1)) {
-				struct status_change_entry* sce = tsc->getSCE(SC_POISONREACT);
-				if (sstatus->def_ele == ELE_POISON || sstatus->rhw.ele == ELE_POISON || sstatus->lhw.ele == ELE_POISON) {
-					clif_damage(*src, *target, tick, sstatus->amotion, 1, 0, 1, DMG_NORMAL, 0, false); //Display MISS.
-					skill_attack(BF_WEAPON, target, target, src, AS_POISONREACT, sce->val1, tick, 0);
-					sc_start2(target, src, SC_POISON, 100, sce->val1, AS_POISONREACT, skill_get_time(TF_POISON, skill_lv), 1000);
-					sce->val2 -= 2;
-					wd->dmg_lv = ATK_BLOCK;
-				}
-				else {
-					clif_damage(*src, *target, tick, sstatus->amotion, 1, 0, 1, DMG_NORMAL, 0, false); //Display MISS.
-					skill_attack(BF_WEAPON, target, target, src, TF_POISON, min(pc_checkskill(tsd, TF_POISON), sce->val1), tick, 0);
-					--sce->val2;
-					wd->dmg_lv = ATK_BLOCK;
-				}
-
-				if (sce->val2 <= 0)
-					status_change_end(target, SC_POISONREACT);
 			}
 		}
 	}
