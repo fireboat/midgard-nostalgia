@@ -1413,11 +1413,14 @@ int32 skill_additional_effect( struct block_list* src, struct block_list *bl, ui
 		sc_start(src,bl,SC_STUN,(6*skill_lv),skill_lv,skill_get_time2(skill_id,skill_lv));
 		break;
 
-	case AS_VENOMKNIFE:
 	case AS_SPLASHER:
 		sc_start2(src, bl, SC_POISON, 100, skill_lv, src->id, skill_get_time2(skill_id, skill_lv));
 		break;
 
+	case AS_VENOMKNIFE:
+		sc_start2(src, bl, SC_POISON, (5 * pc_checkskill(sd, TF_POISON) + 50), skill_lv, src->id, skill_get_time2(skill_id, skill_lv));
+		break;
+		
 	case TF_POISON:
 		if (!sc_start2(src, bl, SC_POISON, (5 * skill_lv + 50), skill_lv, src->id, skill_get_time2(skill_id, skill_lv)) && sd)
 			clif_skill_fail( *sd, skill_id );

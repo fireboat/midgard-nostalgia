@@ -18369,7 +18369,7 @@ Body:
     TargetType: Attack
     Flags:
       IsQuest: true
-    Range: 14
+    Range: 9
     Hit: Single
     HitCount: 1
     Knockback: 2
@@ -18412,12 +18412,9 @@ Body:
     MaxLevel: 1
     Type: Weapon
     TargetType: Attack
-    DamageFlags:
-      IgnoreAtkCard: true
+    Element: Poison
     Flags:
       IsQuest: true
-      IgnoreAutoGuard: true
-      IgnoreCicada: true
     Range: 9
     Hit: Multi_Hit
     HitCount: 1

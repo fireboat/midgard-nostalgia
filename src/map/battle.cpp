@@ -5118,11 +5118,17 @@ static int32 battle_calc_attack_skill_ratio(struct Damage* wd, struct block_list
 		case NJ_KUNAI:
 			skillratio += -100 + 100 * skill_lv;
 			break;
-		case KN_CHARGEATK:
-			skillratio += 600;
+		case KN_CHARGEATK: {
+				int32 k = (wd->miscflag - 1) / 3;
+				if (k < 0)
+					k = 0;
+				else if (k > 2)
+					k = 2;
+				skillratio += 100 * k;
+			}
 			break;
 		case AS_VENOMKNIFE:
-			skillratio += 400;
+			skillratio += 30;
 			break;
 #else
 		case KN_CHARGEATK: { // +100% every 3 cells of distance but hard-limited to 500%
@@ -7622,28 +7628,30 @@ void battle_do_reflect(int32 attack_type, struct Damage *wd, struct block_list* 
 			&& sce->val2 > 0
 			&& status_check_skilluse(target, src, TF_POISON, 0))
 		{
-			if (check_distance_bl(src, target, tstatus->rhw.range + 1))
-			{
-				if (def_element == ELE_POISON || atk_element == ELE_POISON) {
-					skill_attack(BF_WEAPON, target, target, src, AS_POISONREACT, sce->val1, gettick(), 0);
-					sc_start2(target, src, SC_POISON, 100, sce->val1, AS_POISONREACT, skill_get_time(TF_POISON, skill_lv), 1000);
-					--sce->val2;
-				}
-				else {
-					map_session_data* sd = map_id2sd(target->id);
-					skill_attack(BF_WEAPON, target, target, src, TF_POISON, min(pc_checkskill(sd, TF_POISON), sce->val1), gettick(), 0);
-				}
-			}
-			else
-				clif_skill_fail(*tsd, AS_POISONREACT, USESKILL_FAIL, 0);
-			--sce->val2;
-			
-			if (rnd() % 100 < sce->val3)
-			{
+			if (check_distance_bl(src, target, tstatus->rhw.range + 1) && (def_element == ELE_POISON || atk_element == ELE_POISON)) {
+				skill_attack(BF_WEAPON, target, target, src, AS_POISONREACT, sce->val1, gettick(), 0);
+				sc_start2(target, src, SC_POISON, 100, sce->val1, AS_POISONREACT, skill_get_time(TF_POISON, skill_lv), 1000);
 				wd->dmg_lv = ATK_MISS;
 				wd->damage = wd->damage2 = 0;
 				clif_specialeffect(target, EF_PURPLEBODY, SELF);
+				sce->val2 -= 2;
 			}
+			else if (damage > 0 && rnd() % 100 < sce->val3)
+			{
+				if (check_distance_bl(src, target, tstatus->rhw.range + 1))
+				{
+					map_session_data* sd = map_id2sd(target->id);
+					skill_attack(BF_WEAPON, target, target, src, TF_POISON, min(pc_checkskill(sd, TF_POISON), sce->val1), gettick(), 0);
+				}
+				else
+				{
+					clif_skill_fail(*tsd, AS_POISONREACT, USESKILL_FAIL, 0);
+				}
+				wd->dmg_lv = ATK_MISS;
+				wd->damage = wd->damage2 = 0;
+				clif_specialeffect(target, EF_PURPLEBODY, SELF);
+				--sce->val2;
+			}										
 
 			if (sce->val2 <= 0)
 				status_change_end(target, SC_POISONREACT);
