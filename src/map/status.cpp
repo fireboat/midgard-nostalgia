@@ -8153,6 +8153,10 @@ static int16 status_calc_aspd(struct block_list *bl, status_change *sc, bool fix
 				bonus += skill_lv;
 			if ((skill_lv = pc_checkskill(sd, SA_ADVANCEDBOOK)) > 0 && sd->status.weapon == W_BOOK)
 				bonus += (skill_lv - 1) / 2 + 1;
+			if ((skill_lv = pc_checkskill(sd, AS_RIGHT)) > 0 && sd->weapontype1 == W_DAGGER && sd->weapontype2 != W_FIST)
+				bonus += skill_lv;
+			if ((skill_lv = pc_checkskill(sd, AS_LEFT)) > 0 && sd->weapontype2 == W_DAGGER)
+				bonus += skill_lv;
 			if ((skill_lv = pc_checkskill(sd, SG_DEVIL)) > 0 && ((sd->class_&MAPID_THIRDMASK) == MAPID_STAR_EMPEROR || pc_is_maxjoblv(sd)))
 				bonus += 1 + skill_lv;
 			if ((skill_lv = pc_checkskill(sd,GS_SINGLEACTION)) > 0 && (sd->status.weapon >= W_REVOLVER && sd->status.weapon <= W_GRENADE))
