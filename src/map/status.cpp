@@ -2323,7 +2323,7 @@ int32 status_base_amotion_pc(map_session_data* sd, struct status_data* status)
 	if (sd->status.shield)
 		aspd += job->aspd_base[MAX_WEAPON_TYPE];
 	else if (sd->weapontype2 != W_FIST && sd->equip_index[EQI_HAND_R] != sd->equip_index[EQI_HAND_L])
-		aspd += job->aspd_base[sd->weapontype2] / 4; // Dual-wield
+		aspd += job->aspd_base[sd->weapontype2] / (4 * (1000 + pc_checkskill(sd, AS_LEFT) * 100) / 1000); // Dual-wield
 
 	switch(sd->status.weapon) {
 		case W_BOW:
@@ -8150,10 +8150,6 @@ static int16 status_calc_aspd(struct block_list *bl, status_change *sc, bool fix
 			if ((skill_lv = pc_checkskill(sd, BA_MUSICALLESSON)) > 0)
 				bonus += skill_lv;
 			if ((skill_lv = pc_checkskill(sd, RG_PLAGIARISM)) > 0)
-				bonus += skill_lv;
-			if ((skill_lv = pc_checkskill(sd, AS_RIGHT)) > 0 && sd->weapontype2 == W_DAGGER)
-				bonus += skill_lv;
-			if ((skill_lv = pc_checkskill(sd, AS_LEFT)) > 0 && sd->weapontype2 == W_DAGGER)
 				bonus += skill_lv;
 			if ((skill_lv = pc_checkskill(sd, SA_ADVANCEDBOOK)) > 0 && sd->status.weapon == W_BOOK)
 				bonus += (skill_lv - 1) / 2 + 1;
