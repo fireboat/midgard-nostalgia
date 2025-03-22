@@ -7594,10 +7594,18 @@ void battle_do_reflect(int32 attack_type, struct Damage *wd, struct block_list* 
 			uint8 dir = map_calc_dir(target, src->x, src->y);
 			int32 t_dir = unit_getdir(target);
 
-			if (!map_check_dir(dir, t_dir) && check_distance_bl(src, target, tstatus->rhw.range + 1)) {
+			if (!map_check_dir(dir, t_dir))
+			{
 				clif_skillcastcancel(*target); //Remove the casting bar. [Skotlex]
 				status_change_end(target, SC_AUTOCOUNTER);
-				skill_attack(BF_WEAPON, target, target, src, KN_AUTOCOUNTER, sce->val1, gettick(), 0);
+				if (check_distance_bl(src, target, tstatus->rhw.range + 1))
+				{
+					skill_attack(BF_WEAPON, target, target, src, KN_AUTOCOUNTER, sce->val1, gettick(), 0);
+				}
+				else
+				{
+					clif_specialeffect(target, EF_AUTOCOUNTER, AREA);
+				}
 				wd->dmg_lv = ATK_BLOCK;
 				wd->damage = wd->damage2 = 0;
 				return;
@@ -7606,24 +7614,30 @@ void battle_do_reflect(int32 attack_type, struct Damage *wd, struct block_list* 
 	}
 
 	if (auto* sce = tsc->getSCE(SC_POISONREACT)) {
+		int32 atk_element = battle_get_weapon_element(wd, src, target, skill_id, skill_lv, EQI_HAND_R, false);
+		int32 def_element = sstatus->def_ele;
 		if (attack_type|BF_WEAPON|BF_SKILLMASK && ((damage > 0)
 			// Poison React always counter Poison element attacks
-			|| sstatus->rhw.ele == ELE_POISON || sstatus->def_ele == ELE_POISON)
+			|| atk_element == ELE_POISON || def_element == ELE_POISON)
 			&& sce->val2 > 0
-			&& status_check_skilluse(target, src, TF_POISON, 0)
-			&& check_distance_bl(src, target, tstatus->rhw.range + 1))
+			&& status_check_skilluse(target, src, TF_POISON, 0))
 		{
-			if (sstatus->def_ele == ELE_POISON || sstatus->rhw.ele == ELE_POISON) {
-				skill_attack(BF_WEAPON, target, target, src, AS_POISONREACT, sce->val1, gettick(), 0);
-				sc_start2(target, src, SC_POISON, 100, sce->val1, AS_POISONREACT, skill_get_time(TF_POISON, skill_lv), 1000);
-				sce->val2 -= 2;
+			if (check_distance_bl(src, target, tstatus->rhw.range + 1))
+			{
+				if (def_element == ELE_POISON || atk_element == ELE_POISON) {
+					skill_attack(BF_WEAPON, target, target, src, AS_POISONREACT, sce->val1, gettick(), 0);
+					sc_start2(target, src, SC_POISON, 100, sce->val1, AS_POISONREACT, skill_get_time(TF_POISON, skill_lv), 1000);
+					--sce->val2;
+				}
+				else {
+					map_session_data* sd = map_id2sd(target->id);
+					skill_attack(BF_WEAPON, target, target, src, TF_POISON, min(pc_checkskill(sd, TF_POISON), sce->val1), gettick(), 0);
+				}
 			}
-			else {
-				map_session_data* sd = map_id2sd(target->id);
-				skill_attack(BF_WEAPON, target, target, src, TF_POISON, min(pc_checkskill(sd, TF_POISON), sce->val1), gettick(), 0);
-				--sce->val2;
-			}
-
+			else
+				clif_skill_fail(*tsd, AS_POISONREACT, USESKILL_FAIL, 0);
+			--sce->val2;
+			
 			if (rnd() % 100 < sce->val3)
 			{
 				wd->dmg_lv = ATK_MISS;
