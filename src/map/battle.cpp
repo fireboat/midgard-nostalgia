@@ -7595,7 +7595,7 @@ void battle_do_reflect(int32 attack_type, struct Damage *wd, struct block_list* 
 
 	if (auto* sce = tsc->getSCE(SC_AUTOCOUNTER))
 	{
-		if (attack_type|BF_WEAPON|BF_SKILLMASK && status_check_skilluse(target, src, KN_AUTOCOUNTER, 1)) {
+		if (attack_type|BF_WEAPON|BF_SKILLMASK && !skill_get_inf2(skill_id, INF2_IGNOREAUTOGUARD) && status_check_skilluse(target, src, KN_AUTOCOUNTER, 1)) {
 
 			uint8 dir = map_calc_dir(target, src->x, src->y);
 			int32 t_dir = unit_getdir(target);
@@ -7622,7 +7622,7 @@ void battle_do_reflect(int32 attack_type, struct Damage *wd, struct block_list* 
 	if (auto* sce = tsc->getSCE(SC_POISONREACT)) {
 		int32 atk_element = battle_get_weapon_element(wd, src, target, skill_id, skill_lv, EQI_HAND_R, false);
 		int32 def_element = sstatus->def_ele;
-		if (attack_type|BF_WEAPON|BF_SKILLMASK && ((damage > 0)
+		if (attack_type|BF_WEAPON|BF_SKILLMASK && !skill_get_inf2(skill_id, INF2_IGNOREAUTOGUARD) && ((damage > 0)
 			// Poison React always counter Poison element attacks
 			|| atk_element == ELE_POISON || def_element == ELE_POISON)
 			&& sce->val2 > 0

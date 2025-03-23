@@ -10574,7 +10574,7 @@ int32 status_change_start(struct block_list* src, struct block_list* bl,enum sc_
 #else
 			val2=(val1+1)/2 + val1/10; // Number of counters [Skotlex]
 #endif
-			val3= 30 + (2 * val1); // + 5*val1; // Chance to counter. [Skotlex]
+			val3= 20 + (3 * val1); // + 5*val1; // Chance to counter. [Skotlex]
 			break;
 		case SC_MAGICROD:
 			val2 = val1*20; // SP gained
