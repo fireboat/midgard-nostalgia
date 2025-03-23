@@ -6674,6 +6674,11 @@ static void battle_attack_sc_bonus(struct Damage* wd, struct block_list *src, st
 #endif
 	}
 
+	// Venom Dust Passive: increase on poisoned target.
+	if (sd && pc_checkskill(sd, AS_VENOMDUST))
+		if ((tsc->getSCE(SC_POISON) || tsc->getSCE(SC_DPOISON)))
+			ATK_ADDRATE(wd->damage, wd->damage2, (2 * pc_checkskill(sd, AS_VENOMDUST)));
+
 	//The following are applied on top of current damage and are stackable.
 	if (sc) {
 #ifdef RENEWAL
@@ -6710,10 +6715,6 @@ static void battle_attack_sc_bonus(struct Damage* wd, struct block_list *src, st
 		}
 		if (sc->getSCE(SC_GT_CHANGE))
 			ATK_ADDRATE(wd->damage, wd->damage2, sc->getSCE(SC_GT_CHANGE)->val1);
-		// Poison React Passive: increase on poisoned target.
-		if (sc->getSCE(SC_POISONREACT))
-			if ((tsc->getSCE(SC_POISON) || tsc->getSCE(SC_DPOISON)))
-				ATK_ADDRATE(wd->damage, wd->damage2, (2 * sc->getSCE(SC_POISONREACT)->val1));
 #ifdef RENEWAL
 		if (sc->getSCE(SC_EDP)) {
 			switch(skill_id) {
@@ -7632,7 +7633,7 @@ void battle_do_reflect(int32 attack_type, struct Damage *wd, struct block_list* 
 				skill_attack(BF_WEAPON, target, target, src, AS_POISONREACT, sce->val1, gettick(), 0);
 				sc_start2(target, src, SC_POISON, 100, sce->val1, AS_POISONREACT, skill_get_time(TF_POISON, skill_lv), 1000);
 				unit_set_attackdelay(*target, gettick(), DELAY_EVENT_ATTACK);
-				sce->val2 -= 2;
+				sce->val2 -= 3;
 
 				wd->dmg_lv = ATK_MISS;
 				wd->damage = wd->damage2 = 0;
@@ -7650,14 +7651,6 @@ void battle_do_reflect(int32 attack_type, struct Damage *wd, struct block_list* 
 				else
 				{
 					clif_skill_fail(*tsd, AS_POISONREACT, USESKILL_FAIL, 0);
-				}
-
-				if (rnd() % 100 < sce->val3)
-				{
-					wd->dmg_lv = ATK_MISS;
-					wd->damage = wd->damage2 = 0;
-					clif_specialeffect(target, EF_PURPLEBODY, SELF);
-					--sce->val2;
 				}
 			}										
 

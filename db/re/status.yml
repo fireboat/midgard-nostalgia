@@ -395,6 +395,8 @@ Body:
     DurationLookup: AS_POISONREACT
     Flags:
       RemoveOnHermode: true
+    CalcFlags:
+      Hit: true
   - Status: Quagmire
     Icon: EFST_QUAGMIRE
     DurationLookup: WZ_QUAGMIRE

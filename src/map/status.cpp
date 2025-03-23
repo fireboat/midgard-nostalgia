@@ -7369,6 +7369,8 @@ static int16 status_calc_hit(struct block_list *bl, status_change *sc, int32 hit
 		hit += sc->getSCE(SC_BLESSING)->val1 * 2;
 	if (sc->getSCE(SC_TWOHANDQUICKEN))
 		hit += sc->getSCE(SC_TWOHANDQUICKEN)->val1 * 2;
+	if (sc->getSCE(SC_POISONREACT))
+		hit += sc->getSCE(SC_POISONREACT)->val1 * 2;
 	if (sc->getSCE(SC_ADRENALINE))
 		hit += sc->getSCE(SC_ADRENALINE)->val1 * 3 + 5;
 	if (sc->getSCE(SC_NIBELUNGEN) && sc->getSCE(SC_NIBELUNGEN)->val2 == RINGNBL_HIT)
@@ -10574,7 +10576,7 @@ int32 status_change_start(struct block_list* src, struct block_list* bl,enum sc_
 #else
 			val2=(val1+1)/2 + val1/10; // Number of counters [Skotlex]
 #endif
-			val3= 20 + (3 * val1); // + 5*val1; // Chance to counter. [Skotlex]
+			val3= 30 + (4 * val1); // + 5*val1; // Chance to counter. [Skotlex]
 			break;
 		case SC_MAGICROD:
 			val2 = val1*20; // SP gained
