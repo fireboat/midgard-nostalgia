@@ -7633,11 +7633,11 @@ void battle_do_reflect(int32 attack_type, struct Damage *wd, struct block_list* 
 				skill_attack(BF_WEAPON, target, target, src, AS_POISONREACT, sce->val1, gettick(), 0);
 				sc_start2(target, src, SC_POISON, 100, sce->val1, AS_POISONREACT, skill_get_time(TF_POISON, skill_lv), 1000);
 				unit_set_attackdelay(*target, gettick(), DELAY_EVENT_ATTACK);
+				clif_specialeffect(target, EF_PURPLEBODY, SELF);
 				sce->val2 -= 3;
 
 				wd->dmg_lv = ATK_MISS;
 				wd->damage = wd->damage2 = 0;
-				clif_specialeffect(target, EF_PURPLEBODY, SELF);
 			}
 			else if (damage > 0 && rnd() % 100 < sce->val3)
 			{
@@ -7645,13 +7645,16 @@ void battle_do_reflect(int32 attack_type, struct Damage *wd, struct block_list* 
 				{
 					map_session_data* sd = map_id2sd(target->id);
 					skill_attack(BF_WEAPON, target, target, src, TF_POISON, min(pc_checkskill(sd, TF_POISON), sce->val1), gettick(), 0);
-					unit_set_attackdelay(*target, gettick(), DELAY_EVENT_ATTACK);
-					--sce->val2;
 				}
 				else
 				{
 					clif_skill_fail(*tsd, AS_POISONREACT, USESKILL_FAIL, 0);
+					wd->dmg_lv = ATK_MISS;
+					wd->damage = wd->damage2 = 0;
 				}
+				unit_set_attackdelay(*target, gettick(), DELAY_EVENT_ATTACK);
+				clif_specialeffect(target, EF_PURPLEBODY, SELF);
+				--sce->val2;
 			}										
 
 			if (sce->val2 <= 0)
