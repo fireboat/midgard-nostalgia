@@ -23304,27 +23304,27 @@ bool skill_produce_mix(map_session_data *sd, uint16 skill_id, t_itemid nameid, i
 				break;
 		}
 	} else { // Weapon Forging - skill bonuses are straight from kRO website, other things from a jRO calculator [DracoRPG]
-		make_per = 5000 + ((sd->class_&JOBL_THIRD)?1400:sd->status.job_level*20) + status->dex*10 + status->luk*10; // Base
-		make_per += pc_checkskill(sd,skill_id)*500; // Smithing skills bonus: +5/+10/+15
-		// Weaponry Research bonus: +1/+2/+3/+4/+5/+6/+7/+8/+9/+10
-		make_per += pc_checkskill(sd,BS_WEAPONRESEARCH)*100;
-		//  Oridecon Research bonus (custom): +1/+2/+3/+4/+5
+		make_per = 5000 + ((sd->class_&JOBL_THIRD)?3500:sd->status.job_level*50); // Base
+		make_per += pc_checkskill(sd,skill_id)*1000; // Smithing skills bonus: +10/+20/+30
+		// Weaponry Research bonus: +2/+4/+6/+8/+10/+12/+14/+16/+18/+20
+		make_per += pc_checkskill(sd,BS_WEAPONRESEARCH)*200;
+		//  Oridecon Research bonus (custom): +2/+4/+6/+8/+10
 		if( wlv >= 3 ){
-			make_per += pc_checkskill(sd, BS_ORIDEOCON) * 100;
+			make_per += pc_checkskill(sd, BS_ORIDEOCON) * 200;
 		}
-		// Element Stone: -20%
+		// Element Stone: -10%
 		if( ele ){
-			make_per -= 2000;
+			make_per -= 1000;
 		}
-		// Star Crumb: -15% each
-		make_per -= sc * 1500;
+		// Star Crumb: -10% each
+		make_per -= sc * 1000;
 		//  Weapon level malus: -0/-10/-20/-30
 		if( wlv > 1 ){
 			make_per -= ( wlv * 1000 );
 		}
-		if      (pc_search_inventory(sd,ITEMID_EMPERIUM_ANVIL) > -1) make_per+= 1000; // Emperium Anvil: +10
-		else if (pc_search_inventory(sd,ITEMID_GOLDEN_ANVIL) > -1)   make_per+= 500; // Golden Anvil: +5
-		else if (pc_search_inventory(sd,ITEMID_ORIDECON_ANVIL) > -1) make_per+= 300; // Oridecon Anvil: +3
+		if      (pc_search_inventory(sd,ITEMID_EMPERIUM_ANVIL) > -1) make_per+= 2000; // Emperium Anvil: +20
+		else if (pc_search_inventory(sd,ITEMID_GOLDEN_ANVIL) > -1)   make_per+= 1000; // Golden Anvil: +10
+		else if (pc_search_inventory(sd,ITEMID_ORIDECON_ANVIL) > -1) make_per+= 600; // Oridecon Anvil: +6
 		else if (pc_search_inventory(sd,ITEMID_ANVIL) > -1)          make_per+= 0; // Anvil: +0?
 		if (battle_config.wp_rate != 100)
 			make_per = make_per * battle_config.wp_rate / 100;
@@ -23342,10 +23342,14 @@ bool skill_produce_mix(map_session_data *sd, uint16 skill_id, t_itemid nameid, i
 		tmp_item.amount = 1;
 		tmp_item.identify = 1;
 		if (equip) {
-			tmp_item.card[0] = CARD0_FORGE;
-			tmp_item.card[1] = ((sc*5)<<8)+ele;
-			tmp_item.card[2] = GetWord(sd->status.char_id,0); // CharId
-			tmp_item.card[3] = GetWord(sd->status.char_id,1);
+			// tmp_item.card[0] = CARD0_FORGE;
+			// tmp_item.card[1] = ((sc*5)<<8)+ele;
+			// tmp_item.card[2] = GetWord(sd->status.char_id,0); // CharId
+			// tmp_item.card[3] = GetWord(sd->status.char_id,1);
+			tmp_item.card[0] = 0;
+			tmp_item.card[1] = 0;
+			tmp_item.card[2] = ((sc*5)<<8)+ele; // CharId
+			tmp_item.card[3] = CARD0_FORGE;
 		} else {
 			//Flag is only used on the end, so it can be used here. [Skotlex]
 			switch (skill_id) {
