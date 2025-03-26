@@ -3962,12 +3962,11 @@ int32 status_calc_pc_sub(map_session_data* sd, uint8 opt)
 					wa->ele = (sd->inventory.u.items_inventory[index].card[1]&0x0f);
 			}
 
-			if (sd->inventory.u.items_inventory[index].card[3] == CARD0_FORGE) // Custom forged weapon
+			if (sd->inventory.u.items_inventory[index].card[3] >= ITEMID_FLAME_HEART 
+				&& sd->inventory.u.items_inventory[index].card[3] <= ITEMID_GREAT_NATURE) // Custom forged weapon
 			{
-				wd->star += (sd->inventory.u.items_inventory[index].card[2]>>8);
-				if(wd->star >= 15) wd->star = 40; // 3 Star Crumbs now give +40 dmg
-				if (!wa->ele) // Do not overwrite element from previous bonuses.
-					wa->ele = (sd->inventory.u.items_inventory[index].card[2]&0x0f);
+				static const int32 ele_table[4] = { ELE_FIRE, ELE_WATER, ELE_WIND, ELE_EARTH };
+				wa->ele = ele_table[sd->inventory.u.items_inventory[index].card[3]-ITEMID_FLAME_HEART];
 			}
 			
 		} else if(sd->inventory_data[index]->type == IT_ARMOR) {

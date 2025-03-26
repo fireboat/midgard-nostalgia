@@ -22997,14 +22997,14 @@ bool skill_produce_mix(map_session_data *sd, uint16 skill_id, t_itemid nameid, i
 		j = pc_search_inventory(sd,slot[i]);
 		if (j < 0)
 			continue;
-		if (slot[i] == ITEMID_STAR_CRUMB) {
-			pc_delitem(sd,j,1,1,0,LOG_TYPE_PRODUCE);
-			sc++;
-		}
+		// if (slot[i] == ITEMID_STAR_CRUMB) {
+		// 	pc_delitem(sd,j,1,1,0,LOG_TYPE_PRODUCE);
+		// 	sc++;
+		// }
 		if (slot[i] >= ITEMID_FLAME_HEART && slot[i] <= ITEMID_GREAT_NATURE && ele == 0) {
-			static const int32 ele_table[4] = { ELE_FIRE, ELE_WATER, ELE_WIND, ELE_EARTH };
 			pc_delitem(sd,j,1,1,0,LOG_TYPE_PRODUCE);
-			ele = ele_table[slot[i]-ITEMID_FLAME_HEART];
+			static const int32 ele_table[4] = { ELE_FIRE, ELE_WATER, ELE_WIND, ELE_EARTH };
+			ele = slot[i];
 		}
 	}
 
@@ -23317,7 +23317,7 @@ bool skill_produce_mix(map_session_data *sd, uint16 skill_id, t_itemid nameid, i
 			make_per -= 1000;
 		}
 		// Star Crumb: -10% each
-		make_per -= sc * 1000;
+		// make_per -= sc * 1000;
 		//  Weapon level malus: -0/-10/-20/-30
 		if( wlv > 1 ){
 			make_per -= ( wlv * 1000 );
@@ -23348,8 +23348,8 @@ bool skill_produce_mix(map_session_data *sd, uint16 skill_id, t_itemid nameid, i
 			// tmp_item.card[3] = GetWord(sd->status.char_id,1);
 			tmp_item.card[0] = 0;
 			tmp_item.card[1] = 0;
-			tmp_item.card[2] = ((sc*5)<<8)+ele; // CharId
-			tmp_item.card[3] = CARD0_FORGE;
+			tmp_item.card[2] = 0;
+			tmp_item.card[3] = ele;
 		} else {
 			//Flag is only used on the end, so it can be used here. [Skotlex]
 			switch (skill_id) {
