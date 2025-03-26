@@ -2323,7 +2323,7 @@ int32 status_base_amotion_pc(map_session_data* sd, struct status_data* status)
 	if (sd->status.shield)
 		aspd += job->aspd_base[MAX_WEAPON_TYPE];
 	else if (sd->weapontype2 != W_FIST && sd->equip_index[EQI_HAND_R] != sd->equip_index[EQI_HAND_L])
-		aspd += job->aspd_base[sd->weapontype2] / (4 * (1000 + pc_checkskill(sd, AS_LEFT) * 100) / 1000); // Dual-wield
+		aspd += job->aspd_base[sd->weapontype2] / 4; // Dual-wield
 
 	switch(sd->status.weapon) {
 		case W_BOW:
@@ -8220,6 +8220,8 @@ static int16 status_calc_fix_aspd(struct block_list *bl, status_change *sc, int3
  */
 static int16 status_calc_aspd_rate(struct block_list *bl, status_change *sc, int32 aspd_rate)
 {
+	map_session_data* sd = BL_CAST(BL_PC, bl);
+
 	if(sc == nullptr || sc->empty())
 		return cap_value(aspd_rate,0,SHRT_MAX);
 
@@ -8243,9 +8245,17 @@ static int16 status_calc_aspd_rate(struct block_list *bl, status_change *sc, int
 		max < sc->getSCE(SC_ADRENALINE2)->val3)
 		max = sc->getSCE(SC_ADRENALINE2)->val3;
 
-	if (sc->getSCE(SC_ADRENALINE) &&
-		max < sc->getSCE(SC_ADRENALINE)->val3)
-		max = sc->getSCE(SC_ADRENALINE)->val3;
+	if (sc->getSCE(SC_ADRENALINE))
+	{
+		auto max_value = sc->getSCE(SC_ADRENALINE)->val3;
+		if (sd->weapontype1 != W_1HAXE
+			&& sd->weapontype1 != W_2HAXE
+			&& sd->weapontype1 != W_MACE)
+			max_value /= 2;
+
+		if (max < max_value)
+			max = max_value;
+	}
 
 	if (sc->getSCE(SC_SPEARQUICKEN) &&
 		max < sc->getSCE(SC_SPEARQUICKEN)->val2)
@@ -11289,7 +11299,7 @@ int32 status_change_start(struct block_list* src, struct block_list* bl,enum sc_
 #endif
 				}
 				else if (type == SC_ADRENALINE2 || type == SC_ADRENALINE) {
-					val3 = (val2) ? 300 : 200; // Aspd increase
+					val3 = (val2) ? 300 : 250; // Aspd increase
 				}
 				if (s_sd && pc_checkskill(s_sd, BS_HILTBINDING) > 0)
 					tick += tick / 10; //If caster has Hilt Binding, duration increases by 10%

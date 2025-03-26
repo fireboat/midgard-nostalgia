@@ -3638,7 +3638,7 @@ Body:
             Item: Fist
             Rate: 3
           - Index: 529
-            Item: Fist_
+            Item: Fist__
             Rate: 3
           - Index: 530
             Item: Claw
@@ -33128,7 +33128,7 @@ Body:
             Item: Hora_
             Rate: 7
           - Index: 466
-            Item: Fist_
+            Item: Fist__
             Rate: 7
           - Index: 467
             Item: Claw_
@@ -55411,7 +55411,7 @@ Body:
             Item: Guitar_
             Rate: 3000
           - Index: 178
-            Item: Fist_
+            Item: Fist__
             Rate: 3000
           - Index: 179
             Item: Hora_

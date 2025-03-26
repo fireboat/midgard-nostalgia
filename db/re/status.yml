@@ -595,6 +595,7 @@ Body:
     Flags:
       MadoCancel: true
       RemoveOnHermode: true
+      RequireWeapon: true
     Fail:
       Quagmire: true
       Decreaseagi: true

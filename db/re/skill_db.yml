@@ -4159,7 +4159,6 @@ Body:
         - Level: 5
           Amount: 32
       Weapon:
-        Fist: true
         Dagger: true
         1hSword: true
         2hSword: true
@@ -12591,7 +12590,6 @@ Body:
     Requires:
       SpCost: 64
       Weapon:
-        Fist: true
         Dagger: true
         1hSword: true
         2hSword: true
