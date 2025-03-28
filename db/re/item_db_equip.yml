@@ -17129,7 +17129,7 @@ Body:
     EquipLevelMin: 24
     Refineable: true
   - Id: 1808
-    AegisName: Fist__
+    AegisName: Fist_
     Name: Fist
     Type: Weapon
     SubType: Knuckle
@@ -17137,7 +17137,7 @@ Body:
     Weight: 650
     Attack: 115
     Range: 1
-    Slots: 2
+    Slots: 1
     Jobs:
       Monk: true
       Priest: true
