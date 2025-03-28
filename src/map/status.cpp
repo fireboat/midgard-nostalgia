@@ -3967,6 +3967,7 @@ int32 status_calc_pc_sub(map_session_data* sd, uint8 opt)
 			{
 				static const int32 ele_table[4] = { ELE_FIRE, ELE_WATER, ELE_WIND, ELE_EARTH };
 				wa->ele = ele_table[sd->inventory.u.items_inventory[index].card[3]-ITEMID_FLAME_HEART];
+				wd->star = 40;
 			}
 			
 		} else if(sd->inventory_data[index]->type == IT_ARMOR) {

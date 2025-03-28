@@ -22965,10 +22965,10 @@ bool skill_produce_mix(map_session_data *sd, uint16 skill_id, t_itemid nameid, i
 		j = pc_search_inventory(sd,slot[i]);
 		if (j < 0)
 			continue;
-		// if (slot[i] == ITEMID_STAR_CRUMB) {
-		// 	pc_delitem(sd,j,1,1,0,LOG_TYPE_PRODUCE);
-		// 	sc++;
-		// }
+		if (slot[i] == ITEMID_STAR_CRUMB) {
+			pc_delitem(sd,j,1,1,0,LOG_TYPE_PRODUCE);
+			sc++;
+		}
 		if (slot[i] >= ITEMID_FLAME_HEART && slot[i] <= ITEMID_GREAT_NATURE && ele == 0) {
 			pc_delitem(sd,j,1,1,0,LOG_TYPE_PRODUCE);
 			static const int32 ele_table[4] = { ELE_FIRE, ELE_WATER, ELE_WIND, ELE_EARTH };
@@ -23273,19 +23273,19 @@ bool skill_produce_mix(map_session_data *sd, uint16 skill_id, t_itemid nameid, i
 		}
 	} else { // Weapon Forging - skill bonuses are straight from kRO website, other things from a jRO calculator [DracoRPG]
 		make_per = 5000 + ((sd->class_&JOBL_THIRD)?3500:sd->status.job_level*50); // Base
-		make_per += pc_checkskill(sd,skill_id)*1000; // Smithing skills bonus: +10/+20/+30
-		// Weaponry Research bonus: +2/+4/+6/+8/+10/+12/+14/+16/+18/+20
-		make_per += pc_checkskill(sd,BS_WEAPONRESEARCH)*200;
+		make_per += pc_checkskill(sd,skill_id)*500; // Smithing skills bonus: +5/+10/+15
+		// Weaponry Research bonus: +1/+2/+3/+4/+5/+6/+7/+8/+9/+10
+		make_per += pc_checkskill(sd,BS_WEAPONRESEARCH)*100;
 		//  Oridecon Research bonus (custom): +2/+4/+6/+8/+10
 		if( wlv >= 3 ){
-			make_per += pc_checkskill(sd, BS_ORIDEOCON) * 200;
+			make_per += pc_checkskill(sd, BS_ORIDEOCON)*200;
 		}
 		// Element Stone: -10%
 		if( ele ){
 			make_per -= 1000;
 		}
-		// Star Crumb: -10% each
-		// make_per -= sc * 1000;
+		// Star Crumb: +5% each
+		make_per += sc * 500;
 		//  Weapon level malus: -0/-10/-20/-30
 		if( wlv > 1 ){
 			make_per -= ( wlv * 1000 );
