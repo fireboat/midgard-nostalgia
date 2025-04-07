@@ -20384,6 +20384,12 @@ int32 skill_vfcastfix(struct block_list *bl, double time, uint16 skill_id, uint1
 		}
 	}
 
+	// Adjusted by skill bonus
+	if (sd && !(flag&2)) {
+		if (pc_checkskill(sd, MG_SRECOVERY) && sd->class_&MAPID_BASEMASK == MAPID_MAGE)
+			VARCAST_REDUCTION(pc_checkskill(sd, MG_SRECOVERY)*2);
+	}
+
 	// Adjusted by active statuses
 	if (sc != nullptr && !sc->empty() && !(flag&2)) {
 		// Multiplicative Variable CastTime values
