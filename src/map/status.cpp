@@ -7326,7 +7326,7 @@ static int16 status_calc_critical(struct block_list *bl, status_change *sc, int3
 	if (sc->getSCE(SC_SPEARQUICKEN))
 		critical += 20*sc->getSCE(SC_SPEARQUICKEN)->val1;
 	if (sc->getSCE(SC_TWOHANDQUICKEN))
-		critical += (2 + sc->getSCE(SC_TWOHANDQUICKEN)->val1) * 10;
+		critical += 20 * sc->getSCE(SC_TWOHANDQUICKEN)->val1;
 #endif
 	if (sc->getSCE(SC__INVISIBILITY))
 		critical += sc->getSCE(SC__INVISIBILITY)->val3 * 10;

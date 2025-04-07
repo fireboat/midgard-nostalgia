@@ -1345,7 +1345,7 @@ int32 skill_additional_effect( struct block_list* src, struct block_list *bl, ui
 					int32 skill;
 
 					// Automatic trigger of Blitz Beat
-					if (pc_isfalcon(sd) && sd->status.weapon == W_BOW && (skill = pc_checkskill(sd, HT_BLITZBEAT)) > 0 && rnd() % 1000 <= sstatus->luk * 10 / 3 + 1) {
+					if (pc_isfalcon(sd) && sd->status.weapon == W_BOW && (skill = pc_checkskill(sd, HT_BLITZBEAT)) > 0 && rnd() % 1000 <= sstatus->luk * 10 / 3 + pc_checkskill(sd, HT_STEELCROW)) {
 						int32 rate;
 
 						if ((sd->class_ & MAPID_THIRDMASK) == MAPID_RANGER)
@@ -21036,8 +21036,8 @@ int32 skill_attack_area(struct block_list *bl, va_list ap)
 
 	switch (skill_id) {
 		case WZ_FROSTNOVA: //Skills that don't require the animation to be removed
-			if (src->x == bl->x && src->y == bl->y)
-				return 0; //Does not hit current cell
+			// if (src->x == bl->x && src->y == bl->y)
+			// 	return 0; //Does not hit current cell
 			if (map_getcell(bl->m, bl->x, bl->y, CELL_CHKLANDPROTECTOR)) // Attack should not happen if the target is on Land Protector
 				return 0;
 			[[fallthrough]];

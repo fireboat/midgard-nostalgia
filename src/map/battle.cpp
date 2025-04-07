@@ -3574,7 +3574,7 @@ int32 battle_get_weapon_element(struct Damage* wd, struct block_list *src, struc
 			}
 			break;
 		case CR_GRANDCROSS:
-			element = ELE_NEUTRAL;
+			element = ELE_NONE;
 			break;
 	}
 
@@ -3680,6 +3680,9 @@ int32 battle_get_magic_element(struct block_list* src, struct block_list* target
 		case SS_ANKOKURYUUAKUMU:
 			if (mflag & SKILL_ALTDMG_FLAG)
 				element = ELE_FIRE;
+			break;
+		case CR_GRANDCROSS:
+			element = ELE_NONE;
 			break;
 	}
 
@@ -9518,7 +9521,7 @@ struct Damage battle_calc_magic_attack(struct block_list *src,struct block_list 
 #endif
 				// Combine ATK and MATK
 #ifdef RENEWAL
-				ad.damage = (wd.damage + ad.damage) / 2;
+				ad.damage = wd.damage + ad.damage;
 #else
 				ad.damage = std::max((int64)1, wd.damage + ad.damage);
 #endif
