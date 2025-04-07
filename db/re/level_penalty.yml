@@ -68,12 +68,6 @@ Body:
       - Difference: -11
         Rate: 90
       - Difference: -16
-        Rate: 85
-      - Difference: -21
-        Rate: 60
-      - Difference: -26
-        Rate: 35
-      - Difference: -31
         Rate: 10
   - Type: Drop
     LevelDifferences:

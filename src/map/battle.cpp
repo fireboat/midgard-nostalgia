@@ -1486,8 +1486,18 @@ bool battle_status_block_damage(struct block_list *src, struct block_list *targe
 			clif_skill_nodamage(target, *target, CR_AUTOGUARD, sce->val1);
 			unit_set_walkdelay(target, gettick(), delay, 1);
 #ifdef RENEWAL
-			if (sc->getSCE(SC_SHRINK))
-				sc_start(target, src, SC_STUN, 50, skill_lv, skill_get_time2(skill_id, skill_lv));
+			if (sc->getSCE(SC_SHRINK) && rnd() % 100 < 5 * sce->val1)
+			{
+				if (flag&(BF_SHORT|BF_WEAPON) == (BF_SHORT|BF_WEAPON))
+				{
+					uint8 shieldcharge_lv = pc_checkskill(sd, CR_SHIELDCHARGE) == 0 ? pc_checkskill(sd, CR_SHIELDCHARGE) : 1;
+					skill_attack(BF_WEAPON, target, target, src, CR_SHIELDCHARGE, shieldcharge_lv, gettick(), 0);
+				}
+				else
+				{
+					sc_start(target, src, SC_STUN, 100, skill_lv, skill_get_time2(skill_id, skill_lv));
+				}
+			}
 #else
 			if (sc->getSCE(SC_SHRINK) && rnd() % 100 < 5 * sce->val1)
 				skill_blown(target, src, skill_get_blewcount(CR_SHRINK, 1), -1, BLOWN_NONE);
@@ -3259,17 +3269,20 @@ static bool is_attack_hitting(struct Damage* wd, struct block_list *src, struct 
 			case ML_PIERCE:
 				hitrate += hitrate * 5 * skill_lv / 100;
 				break;
+			case AS_POISONREACT:
+				hitrate += hitrate * 50 / 100;
+				break;
 			case AS_SONICBLOW:
 				if(sd && pc_checkskill(sd,AS_SONICACCEL) > 0)
 #ifdef RENEWAL
-					hitrate += hitrate * 90 / 100;
+					hitrate += hitrate * 50 / 100;
 #else
 					hitrate += hitrate * 50 / 100;
 #endif
 				break;
 #ifdef RENEWAL
 			case RG_BACKSTAP:
-				hitrate += skill_lv; // !TODO: What's the rate increase?
+				hitrate += hitrate * 4 * skill_lv / 100; // !TODO: What's the rate increase?
 				break;
 #endif
 			case RK_SONICWAVE:
@@ -3559,6 +3572,9 @@ int32 battle_get_weapon_element(struct Damage* wd, struct block_list *src, struc
 			if( sd != nullptr ){
 				element = sd->bonus.arrow_ele;
 			}
+			break;
+		case CR_GRANDCROSS:
+			element = ELE_NEUTRAL;
 			break;
 	}
 
@@ -9559,7 +9575,7 @@ struct Damage battle_calc_magic_attack(struct block_list *src,struct block_list 
 				if (src == target) {
 					// Grand Cross on self first applies attr_fix, then cardfix and finally halves the damage
 					if (src->type == BL_PC)
-						ad.damage = ad.damage / 2;
+						ad.damage = ad.damage / 4;
 					else
 						ad.damage = 0;
 				}

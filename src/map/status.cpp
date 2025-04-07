@@ -4490,9 +4490,25 @@ int32 status_calc_pc_sub(map_session_data* sd, uint8 opt)
 // ----- CRITICAL CALCULATION -----
 
 #ifdef RENEWAL
-	if ((skill = pc_checkskill(sd, DC_DANCINGLESSON)) > 0)
+	if ((skill = pc_checkskill(sd, DC_DANCINGLESSON)) > 0 && sd->status.weapon == W_WHIP)
 		base_status->cri += skill * 10;
 	if ((skill = pc_checkskill(sd, PR_MACEMASTERY)) > 0 && (sd->status.weapon == W_MACE || sd->status.weapon == W_2HMACE))
+		base_status->cri += skill * 10;
+	if ((skill = pc_checkskill(sd, SM_SWORD)) > 0 && (sd->status.weapon == W_DAGGER || sd->status.weapon == W_1HSWORD))
+		base_status->cri += skill * 10;
+	if ((skill = pc_checkskill(sd, SM_TWOHAND)) > 0 && sd->status.weapon == W_2HSWORD)
+		base_status->cri += skill * 10;
+	if ((skill = pc_checkskill(sd, KN_SPEARMASTERY)) > 0 && (sd->status.weapon == W_1HSPEAR || sd->status.weapon == W_2HSPEAR))
+		base_status->cri += skill * 10;
+	if ((skill = pc_checkskill(sd, BS_WEAPONRESEARCH)) > 0)
+		base_status->cri += skill * 10;
+	if ((skill = pc_checkskill(sd, AM_AXEMASTERY)) > 0 && (sd->status.weapon == W_1HAXE || sd->status.weapon == W_2HAXE || sd->status.weapon == W_1HSWORD))
+		base_status->cri += skill * 10;
+	if ((skill = pc_checkskill(sd, AS_KATAR)) > 0 && sd->status.weapon == W_KATAR)
+		base_status->cri += skill * 5;
+	if ((skill = pc_checkskill(sd, AS_RIGHT)) > 0 && sd->status.weapon >= W_DOUBLE_DD && sd->status.weapon <= W_DOUBLE_DA)
+		base_status->cri += skill * 10;
+	if ((skill = pc_checkskill(sd, AS_LEFT)) > 0 && sd->status.weapon >= W_DOUBLE_DD && sd->status.weapon <= W_DOUBLE_DA)
 		base_status->cri += skill * 10;
 #endif
 	if ((skill = pc_checkskill(sd, SHC_SHADOW_SENSE)) > 0)
@@ -7303,13 +7319,12 @@ static int16 status_calc_critical(struct block_list *bl, status_change *sc, int3
 		critical += sc->getSCE(SC_TRUESIGHT)->val2;
 	if (sc->getSCE(SC_CLOAKING))
 	{
-		int32 skill_lv = sc->getSCE(SC_CLOAKING)->val1;
-		if (bl->type == BL_PC && skill_lv > 5)
-			critical += (skill_lv - 5) * 10 * (BL_CAST(BL_PC, bl)->weapontype1 == W_KATAR ? 5 : 10);
+		if (bl->type == BL_PC && sc->getSCE(SC_CLOAKING)->val1 > 5)
+			critical += (sc->getSCE(SC_CLOAKING)->val1 - 5) * (BL_CAST(BL_PC, bl)->weapontype1 == W_KATAR ? 50 : 100);
 	}
 #ifdef RENEWAL
 	if (sc->getSCE(SC_SPEARQUICKEN))
-		critical += 3*sc->getSCE(SC_SPEARQUICKEN)->val1*10;
+		critical += 20*sc->getSCE(SC_SPEARQUICKEN)->val1;
 	if (sc->getSCE(SC_TWOHANDQUICKEN))
 		critical += (2 + sc->getSCE(SC_TWOHANDQUICKEN)->val1) * 10;
 #endif
@@ -7378,8 +7393,6 @@ static int16 status_calc_hit(struct block_list *bl, status_change *sc, int32 hit
 		hit += sc->getSCE(SC_BLESSING)->val1 * 2;
 	if (sc->getSCE(SC_TWOHANDQUICKEN))
 		hit += sc->getSCE(SC_TWOHANDQUICKEN)->val1 * 2;
-	if (sc->getSCE(SC_POISONREACT))
-		hit += sc->getSCE(SC_POISONREACT)->val1 * 2;
 	if (sc->getSCE(SC_ADRENALINE))
 		hit += sc->getSCE(SC_ADRENALINE)->val1 * 3 + 5;
 	if (sc->getSCE(SC_NIBELUNGEN) && sc->getSCE(SC_NIBELUNGEN)->val2 == RINGNBL_HIT)

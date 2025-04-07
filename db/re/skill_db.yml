@@ -7239,7 +7239,6 @@ Body:
           Amount: 93
         - Level: 10
           Amount: 100
-      HpRateCost: 20
     Unit:
       Id: Dummyskill
       Layout: -1
