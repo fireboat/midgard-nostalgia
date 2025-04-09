@@ -2102,8 +2102,8 @@ bool status_check_skilluse(struct block_list *src, struct block_list *target, ui
 		if (sc->getSCE(SC_DANCING) && flag!=2) {
 			std::shared_ptr<s_skill_db> skill = skill_db.find(skill_id);
 
-			if (!skill)
-				return false;
+			// if (!skill)
+			// 	return false;
 
 			if (src->type == BL_PC && ((skill_id >= WA_SWING_DANCE && skill_id <= WM_UNLIMITED_HUMMING_VOICE ) ||
 				skill_id == WM_FRIGG_SONG))
