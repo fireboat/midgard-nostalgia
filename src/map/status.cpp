@@ -4500,7 +4500,7 @@ int32 status_calc_pc_sub(map_session_data* sd, uint8 opt)
 		base_status->cri += skill * 10;
 	if ((skill = pc_checkskill(sd, KN_SPEARMASTERY)) > 0 && (sd->status.weapon == W_1HSPEAR || sd->status.weapon == W_2HSPEAR))
 		base_status->cri += skill * 10;
-	if ((skill = pc_checkskill(sd, BS_WEAPONRESEARCH)) > 0)
+	if ((skill = pc_checkskill(sd, BS_WEAPONRESEARCH)) > 0 && sd->status.weapon != W_FIST)
 		base_status->cri += skill * 10;
 	if ((skill = pc_checkskill(sd, AM_AXEMASTERY)) > 0 && (sd->status.weapon == W_1HAXE || sd->status.weapon == W_2HAXE || sd->status.weapon == W_1HSWORD))
 		base_status->cri += skill * 10;
@@ -4655,6 +4655,8 @@ int32 status_calc_pc_sub(map_session_data* sd, uint8 opt)
 	// Anti-element and anti-race
 	if((skill=pc_checkskill(sd,CR_TRUST))>0)
 		sd->indexed_bonus.subele[ELE_HOLY] += skill*5;
+	if((skill=pc_checkskill(sd,CR_PROVIDENCE))>0)
+		sd->indexed_bonus.subrace[RC_DEMON] += skill*5;
 	if((skill=pc_checkskill(sd,BS_SKINTEMPER))>0) {
 		sd->indexed_bonus.subele[ELE_NEUTRAL] += skill;
 		sd->indexed_bonus.subele[ELE_FIRE] += skill*5;
@@ -7566,10 +7568,8 @@ static defType status_calc_def(struct block_list *bl, status_change *sc, int32 d
 #endif
 	if(sc->getSCE(SC_KEEPING))
 		return 90;
-#ifndef RENEWAL /// Steel Body does not provide 90 DEF in [RENEWAL]
-	if(sc->getSCE(SC_STEELBODY))
-		return 90;
-#endif
+
+
 	if (sc->getSCE(SC_NYANGGRASS)) {
 		if (bl->type == BL_PC)
 			return 0;
@@ -7584,6 +7584,8 @@ static defType status_calc_def(struct block_list *bl, status_change *sc, int32 d
 #ifdef RENEWAL
 	if (sc->getSCE(SC_ASSUMPTIO))
 		def += sc->getSCE(SC_ASSUMPTIO)->val1 * 50;
+	if(sc->getSCE(SC_STEELBODY))
+		def += 400;
 #endif
 	if (bl->type == BL_HOM && sc->getSCE(SC_DEFENCE))
 		def += sc->getSCE(SC_DEFENCE)->val2;
@@ -7736,10 +7738,6 @@ static defType status_calc_mdef(struct block_list *bl, status_change *sc, int32 
 	if(sc->getSCE(SC_BERSERK))
 		return 0;
 
-#ifndef RENEWAL /// Steel Body does not provide 90 MDEF in [RENEWAL]
-	if(sc->getSCE(SC_STEELBODY))
-		return 90;
-#endif
 	if (sc->getSCE(SC_NYANGGRASS)) {
 		if (bl->type == BL_PC)
 			return 0;
@@ -7749,6 +7747,8 @@ static defType status_calc_mdef(struct block_list *bl, status_change *sc, int32 
 	if(sc->getSCE(SC_MDEFSET))
 		return sc->getSCE(SC_MDEFSET)->val1;
 
+	if(sc->getSCE(SC_STEELBODY))
+		mdef += 75;
 	if(sc->getSCE(SC_EARTH_INSIGNIA) && sc->getSCE(SC_EARTH_INSIGNIA)->val1 == 3)
 		mdef += 50;
 	if(sc->getSCE(SC_ENDURE) && !sc->getSCE(SC_ENDURE)->val3) // It has been confirmed that Eddga card grants 1 MDEF, not 0, not 10, but 1.

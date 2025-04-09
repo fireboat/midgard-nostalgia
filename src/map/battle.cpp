@@ -1486,14 +1486,14 @@ bool battle_status_block_damage(struct block_list *src, struct block_list *targe
 			clif_skill_nodamage(target, *target, CR_AUTOGUARD, sce->val1);
 			unit_set_walkdelay(target, gettick(), delay, 1);
 #ifdef RENEWAL
-			if (sc->getSCE(SC_SHRINK) && rnd() % 100 < 5 * sce->val1)
+			if (sc->getSCE(SC_SHRINK))
 			{
-				if (flag&(BF_SHORT|BF_WEAPON) == (BF_SHORT|BF_WEAPON))
+				if (flag&(BF_SHORT|BF_WEAPON) == (BF_SHORT|BF_WEAPON) && status_check_skilluse(target, src, TF_POISON, 0))
 				{
 					uint8 shieldcharge_lv = pc_checkskill(sd, CR_SHIELDCHARGE) == 0 ? pc_checkskill(sd, CR_SHIELDCHARGE) : 1;
 					skill_attack(BF_WEAPON, target, target, src, CR_SHIELDCHARGE, shieldcharge_lv, gettick(), 0);
 				}
-				else
+				else if(rnd() % 100 < 5 * sce->val1)
 				{
 					sc_start(target, src, SC_STUN, 100, skill_lv, skill_get_time2(skill_id, skill_lv));
 				}
@@ -1868,11 +1868,11 @@ int64 battle_calc_damage(struct block_list *src,struct block_list *bl,struct Dam
 				damage -= damage * tsc->getSCE(SC_GVG_GOLEM)->val4 / 100;
 		}
 
-#ifdef RENEWAL
-		// Renewal: steel body reduces all incoming damage to 1/10 [helvetica]
-		if( tsc->getSCE(SC_STEELBODY) )
-			damage = damage > 10 ? damage / 10 : 1;
-#endif
+// #ifdef RENEWAL
+// 		// Renewal: steel body reduces all incoming damage to 1/10 [helvetica]
+// 		if( tsc->getSCE(SC_STEELBODY) )
+// 			damage = damage > 10 ? damage / 10 : 1;
+// #endif
 
 		//Finally added to remove the status of immobile when Aimed Bolt is used. [Jobbie]
 		if( skill_id == RA_AIMEDBOLT && (tsc->getSCE(SC_BITE) || tsc->getSCE(SC_ANKLE) || tsc->getSCE(SC_ELECTRICSHOCKER)) ) {
@@ -4873,14 +4873,14 @@ static int32 battle_calc_attack_skill_ratio(struct Damage* wd, struct block_list
 #ifdef RENEWAL
 			skillratio += 150 + 50 * skill_lv;
 			if (sd && sd->status.weapon == W_KNUCKLE)
-				skillratio *= 2;
+				skillratio += skillratio / 4; // 25% bonus for knuckle weapons
 #else
 			skillratio += 50 + 50 * skill_lv;
 #endif
 			break;
 		case MO_COMBOFINISH:
 #ifdef RENEWAL
-			skillratio += 450 + 50 * skill_lv + sstatus->str; // !TODO: How does STR play a role?
+			skillratio += 350 + 50 * skill_lv; // !TODO: How does STR play a role?
 #else
 			skillratio += 140 + 60 * skill_lv;
 #endif
@@ -4890,7 +4890,7 @@ static int32 battle_calc_attack_skill_ratio(struct Damage* wd, struct block_list
 		case BA_MUSICALSTRIKE:
 		case DC_THROWARROW:
 #ifdef RENEWAL
-			skillratio += 10 + 40 * skill_lv;
+			skillratio += 40 * skill_lv;
 #else
 			skillratio += 25 + 25 * skill_lv;
 #endif
@@ -10558,7 +10558,7 @@ enum damage_lv battle_weapon_attack(struct block_list* src, struct block_list* t
 
 	if(sd && (skillv = pc_checkskill(sd,MO_TRIPLEATTACK)) > 0) {
 #ifdef RENEWAL
-		int32 triple_rate = 30; //Base Rate
+		int32 triple_rate = 30 - skillv; //Base Rate
 #else
 		int32 triple_rate = 30 - skillv; //Base Rate
 #endif
@@ -10567,6 +10567,8 @@ enum damage_lv battle_weapon_attack(struct block_list* src, struct block_list* t
 			triple_rate+= triple_rate*(sc->getSCE(SC_SKILLRATE_UP)->val2)/100;
 			status_change_end(src, SC_SKILLRATE_UP);
 		}
+		if (sd->status.weapon == W_KNUCKLE) triple_rate *= 2; //Double rate for knuckles
+		
 		if (rnd()%100 < triple_rate) {
 			//Need to apply canact_tick here because it doesn't go through skill_castend_id
 			sd->ud.canact_tick = i64max(tick + skill_delayfix(src, MO_TRIPLEATTACK, skillv), sd->ud.canact_tick);
