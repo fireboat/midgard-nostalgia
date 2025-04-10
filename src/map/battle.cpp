@@ -1488,7 +1488,7 @@ bool battle_status_block_damage(struct block_list *src, struct block_list *targe
 #ifdef RENEWAL
 			if (sc->getSCE(SC_SHRINK))
 			{
-				if (flag&(BF_SHORT|BF_WEAPON) == (BF_SHORT|BF_WEAPON) && status_check_skilluse(target, src, TF_POISON, 0))
+				if ((flag&(BF_SHORT|BF_WEAPON)) == (BF_SHORT|BF_WEAPON) && status_check_skilluse(target, src, TF_POISON, 0))
 				{
 					uint8 shieldcharge_lv = pc_checkskill(sd, CR_SHIELDCHARGE) == 0 ? pc_checkskill(sd, CR_SHIELDCHARGE) : 1;
 					skill_attack(BF_WEAPON, target, target, src, CR_SHIELDCHARGE, shieldcharge_lv, gettick(), 0);
@@ -4890,7 +4890,8 @@ static int32 battle_calc_attack_skill_ratio(struct Damage* wd, struct block_list
 		case BA_MUSICALSTRIKE:
 		case DC_THROWARROW:
 #ifdef RENEWAL
-			skillratio += 40 * skill_lv;
+			//skillratio += 40 * skill_lv;
+			skillratio += 25 + 25 * skill_lv;
 #else
 			skillratio += 25 + 25 * skill_lv;
 #endif

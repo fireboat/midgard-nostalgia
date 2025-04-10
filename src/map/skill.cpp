@@ -533,7 +533,7 @@ int32 skill_calc_heal(struct block_list *src, struct block_list *target, uint16 
 	switch( skill_id ) {
 #ifndef RENEWAL
 		case BA_APPLEIDUN:
-			hp = 30 + 5 * skill_lv + (status_get_vit(src) / 2); // HP recovery
+			hp = 30 + 5 * skill_lv; // HP recovery
 			if (sd)
 				hp += 5 * pc_checkskill(sd, BA_MUSICALLESSON);
 			break;
@@ -9420,8 +9420,8 @@ int32 skill_castend_nodamage_id (struct block_list *src, struct block_list *bl, 
 
 	case BD_ADAPTATION:
 #ifdef RENEWAL
-		clif_skill_nodamage(src, *bl, skill_id, skill_lv);
-		sc_start(src, bl, type, 100, skill_lv, skill_get_time(skill_id, skill_lv));
+			clif_skill_nodamage(src, *bl, skill_id, skill_lv);
+			sc_start(src, bl, type, 100, skill_lv, skill_get_time(skill_id, skill_lv));
 #else
 		if(tsc && tsc->getSCE(SC_DANCING)){
 			clif_skill_nodamage(src,*bl,skill_id,skill_lv);
@@ -16042,22 +16042,22 @@ std::shared_ptr<s_skill_unit_group> skill_unitsetting(struct block_list *src, ui
 	}
 
 	case BA_WHISTLE:
-		val1 = skill_lv + status->agi / 10; // Flee increase
-		val2 = (skill_lv + 1) / 2 + status->luk / 30; // Perfect dodge increase
+		val1 = skill_lv; // Flee increase
+		val2 = (skill_lv + 1) / 2; // Perfect dodge increase
 		if (sd) {
 			val1 += pc_checkskill(sd, BA_MUSICALLESSON) / 2;
 			val2 += pc_checkskill(sd, BA_MUSICALLESSON) / 5;
 		}
 		break;
 	case DC_HUMMING:
-		val1 = 1 + 2 * skill_lv + status->dex / 10; // Hit increase
+		val1 = 1 + 2 * skill_lv; // Hit increase
 		if (sd)
 			val1 += pc_checkskill(sd, DC_DANCINGLESSON);
 		break;
 	case BA_POEMBRAGI:
-		val1 = 3 * skill_lv + status->dex / 10; // Casting time reduction
+		val1 = 3 * skill_lv; // Casting time reduction
 		//For some reason at level 10 the base delay reduction is 50%.
-		val2 = (skill_lv < 10 ? 3 * skill_lv : 50) + status->int_ / 5; // After-cast delay reduction
+		val2 = (skill_lv < 10 ? 3 * skill_lv : 50); // After-cast delay reduction
 		if (sd) {
 			val1 += pc_checkskill(sd, BA_MUSICALLESSON);
 			val2 += 2 * pc_checkskill(sd, BA_MUSICALLESSON);
@@ -16065,8 +16065,8 @@ std::shared_ptr<s_skill_unit_group> skill_unitsetting(struct block_list *src, ui
 		break;
 	case DC_DONTFORGETME:
 #ifdef RENEWAL
-		val1 = 3 * skill_lv + status->dex / 15; // ASPD decrease
-		val2 = 2 * skill_lv + status->agi / 20; // Movement speed adjustment.
+		val1 = 3 * skill_lv; // ASPD decrease
+		val2 = 2 * skill_lv; // Movement speed adjustment.
 #else
 		val1 = 5 + 3 * skill_lv + status->dex / 10; // ASPD decrease
 		val2 = 5 + 3 * skill_lv + status->agi / 10; // Movement speed adjustment.
@@ -16082,8 +16082,8 @@ std::shared_ptr<s_skill_unit_group> skill_unitsetting(struct block_list *src, ui
 		val1 *= 10; //Because 10 is actually 1% aspd
 		break;
 	case DC_SERVICEFORYOU:
-		val1 = 15 + skill_lv + (status->int_ / 10); // MaxSP percent increase
-		val2 = 20 + 3 * skill_lv + (status->int_ / 10); // SP cost reduction
+		val1 = 15 + skill_lv; // MaxSP percent increase
+		val2 = 20 + 3 * skill_lv; // SP cost reduction
 		if (sd) {
 			val1 += pc_checkskill(sd, DC_DANCINGLESSON) / 2;
 			val2 += pc_checkskill(sd, DC_DANCINGLESSON) / 2;
@@ -16092,11 +16092,11 @@ std::shared_ptr<s_skill_unit_group> skill_unitsetting(struct block_list *src, ui
 	case BA_ASSASSINCROSS:
 		if (sd)
 			val1 = pc_checkskill(sd, BA_MUSICALLESSON) / 2;
-		val1 += 5 + skill_lv + (status->agi / 20);
+		val1 += 5 + skill_lv;
 		val1 *= 10; // ASPD works with 1000 as 100%
 		break;
 	case DC_FORTUNEKISS:
-		val1 = 10 + skill_lv + (status->luk / 10); // Critical increase
+		val1 = 10 + skill_lv; // Critical increase
 		val1 *= 10; //Because every 10 crit is an actual cri point.
 		if (sd)
 			val1 += 5 * pc_checkskill(sd, DC_DANCINGLESSON);
@@ -20386,7 +20386,7 @@ int32 skill_vfcastfix(struct block_list *bl, double time, uint16 skill_id, uint1
 
 	// Adjusted by skill bonus
 	if (sd && !(flag&2)) {
-		if (pc_checkskill(sd, MG_SRECOVERY) && sd->class_&MAPID_BASEMASK == MAPID_MAGE)
+		if (pc_checkskill(sd, MG_SRECOVERY) && (sd->class_&MAPID_BASEMASK) == MAPID_MAGE)
 			VARCAST_REDUCTION(pc_checkskill(sd, MG_SRECOVERY)*2);
 	}
 
