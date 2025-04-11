@@ -7883,7 +7883,7 @@ static uint16 status_calc_speed(struct block_list *bl, status_change *sc, int32 
 #endif
 			else
 			if( sd && sc->getSCE(SC_DANCING) )
-				val = max( val, 300 - (25 + 5 * (sc->getSCE(SC_SPIRIT) && sc->getSCE(SC_SPIRIT)->val2 == SL_BARDDANCER)) * pc_checkskill(sd,(sd->status.sex?BA_MUSICALLESSON:DC_DANCINGLESSON)) );
+				val = max( val, 400 - (35 + 5 * (sc->getSCE(SC_SPIRIT) && sc->getSCE(SC_SPIRIT)->val2 == SL_BARDDANCER)) * pc_checkskill(sd,(sd->status.sex?BA_MUSICALLESSON:DC_DANCINGLESSON)) );
 			if( sc->getSCE(SC_DECREASEAGI) )
 				val = max( val, 25 );
 			if( sc->getSCE(SC_QUAGMIRE) || sc->getSCE(SC_HALLUCINATIONWALK_POSTDELAY) || (sc->getSCE(SC_GLOOMYDAY) && sc->getSCE(SC_GLOOMYDAY)->val4) )
