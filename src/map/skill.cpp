@@ -531,7 +531,7 @@ int32 skill_calc_heal(struct block_list *src, struct block_list *target, uint16 
 	tsc = status_get_sc(target);
 
 	switch( skill_id ) {
-#ifndef RENEWAL
+#ifdef PRERE_DANCESONG
 		case BA_APPLEIDUN:
 			hp = 30 + 5 * skill_lv; // HP recovery
 			if (sd)
@@ -9419,7 +9419,7 @@ int32 skill_castend_nodamage_id (struct block_list *src, struct block_list *bl, 
 		break;
 
 	case BD_ADAPTATION:
-#ifdef RENEWAL
+#ifndef PRERE_DANCESONG
 			clif_skill_nodamage(src, *bl, skill_id, skill_lv);
 			sc_start(src, bl, type, 100, skill_lv, skill_get_time(skill_id, skill_lv));
 #else
@@ -9472,7 +9472,7 @@ int32 skill_castend_nodamage_id (struct block_list *src, struct block_list *bl, 
 		}
 		break;
 
-#ifdef RENEWAL
+#ifndef PRERE_DANCESONG
 	case BD_LULLABY:
 	case BD_RICHMANKIM:
 	case BD_ETERNALCHAOS:
@@ -14200,7 +14200,7 @@ TIMER_FUNC(skill_castend_id){
 				sc->getSCE(SC_SPIRIT)->val3 == ud->skill_id &&
 				ud->skill_id != WZ_WATERBALL)
 				sc->getSCE(SC_SPIRIT)->val3 = 0; //Clear bounced spell check.
-#ifndef RENEWAL
+#ifdef PRERE_DANCESONG
 			if( sc->getSCE(SC_DANCING) && sd && skill_get_inf2(ud->skill_id, INF2_ISSONG) )
 				skill_blockpc_start(*sd,BD_ADAPTATION,3000);
 #endif
@@ -14581,7 +14581,7 @@ int32 skill_castend_pos2(struct block_list* src, int32 x, int32 y, uint16 skill_
 	case WE_CALLPARENT:
 	case WE_CALLBABY:
 	case SA_LANDPROTECTOR:
-#ifndef RENEWAL
+#ifdef PRERE_DANCESONG
 	case BD_LULLABY:
 	case BD_RICHMANKIM:
 	case BD_ETERNALCHAOS:
@@ -14720,7 +14720,7 @@ int32 skill_castend_pos2(struct block_list* src, int32 x, int32 y, uint16 skill_
 		}
 		break;
 #endif
-#ifndef RENEWAL
+#ifdef PRERE_DANCESONG
 	case CG_HERMODE:
 		skill_clear_unitgroup(src);
 		if ((sg = skill_unitsetting(src,skill_id,skill_lv,x,y,0)))
@@ -16687,8 +16687,8 @@ static int32 skill_unit_onplace(struct skill_unit *unit, struct block_list *bl, 
 		case UNT_INTOABYSS:
 		case UNT_SIEGFRIED:
 			 //Needed to check when a dancer/bard leaves their ensemble area.
-			// if (sg->src_id==bl->id && !(sc && sc->getSCE(SC_SPIRIT) && sc->getSCE(SC_SPIRIT)->val2 == SL_BARDDANCER))
-			// 	return skill_id;
+			 if (sg->src_id==bl->id && !(sc && sc->getSCE(SC_SPIRIT) && sc->getSCE(SC_SPIRIT)->val2 == SL_BARDDANCER))
+			 	return skill_id;
 			if (!sce)
 				sc_start4(ss, bl,type,100,sg->skill_lv,sg->val1,sg->val2,0,sg->limit);
 			break;
@@ -17775,8 +17775,9 @@ int32 skill_unit_onout(struct skill_unit *src, struct block_list *bl, t_tick tic
 		case UNT_DONTFORGETME:
 		case UNT_FORTUNEKISS:
 		case UNT_SERVICEFORYOU:
-			// if (sg->src_id==bl->id && !(sc && sc->getSCE(SC_SPIRIT) && sc->getSCE(SC_SPIRIT)->val2 == SL_BARDDANCER))
-			// 	return -1;
+			 //if (sg->src_id==bl->id && !(sc && sc->getSCE(SC_SPIRIT) && sc->getSCE(SC_SPIRIT)->val2 == SL_BARDDANCER))
+			 	//return -1;
+			break;
 	}
 	return sg->skill_id;
 }
@@ -18632,7 +18633,7 @@ bool skill_check_condition_castbegin( map_session_data& sd, uint16 skill_id, uin
 				return false;
 			}
 			break; //Combo ready.
-#ifndef RENEWAL
+#ifdef PRERE_DANCESONG
 		case BD_ADAPTATION:
 			{
 				int32 time;

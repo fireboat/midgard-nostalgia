@@ -2102,22 +2102,22 @@ bool status_check_skilluse(struct block_list *src, struct block_list *target, ui
 		if (sc->getSCE(SC_DANCING) && flag!=2) {
 			std::shared_ptr<s_skill_db> skill = skill_db.find(skill_id);
 
-			// if (!skill)
-			// 	return false;
+			 if (!skill)
+			 	return true;
 
 			if (src->type == BL_PC && ((skill_id >= WA_SWING_DANCE && skill_id <= WM_UNLIMITED_HUMMING_VOICE ) ||
 				skill_id == WM_FRIGG_SONG))
 			{ // Lvl 5 Lesson or higher allow you use 3rd job skills while dancing.
 				if( pc_checkskill((TBL_PC*)src,WM_LESSON) < 5 )
 					return false;
-#ifndef RENEWAL
+#ifdef PRERE_DANCESONG
 			} else if(sc->getSCE(SC_LONGING)) { // Allow everything except dancing/re-dancing. [Skotlex]
 				if (skill_id == BD_ENCORE || skill->inf2[INF2_ISSONG] || skill->inf2[INF2_ISENSEMBLE])
 					return false;
 #endif
 			} else if(!skill->inf2[INF2_ALLOWWHENPERFORMING]) // Skills that can be used in dancing state
 				return false;
-#ifndef RENEWAL
+#ifdef PRERE_DANCESONG
 			if ((sc->getSCE(SC_DANCING)->val1&0xFFFF) == CG_HERMODE && skill_id == BD_ADAPTATION)
 				return false; // Can't amp out of Wand of Hermode :/ [Skotlex]
 #endif
@@ -2148,7 +2148,7 @@ bool status_check_skilluse(struct block_list *src, struct block_list *target, ui
 			// Skill blocking.
 			if (
 				(sc->getSCE(SC_VOLCANO) && skill_id == WZ_ICEWALL) ||
-#ifndef RENEWAL
+#ifdef PRERE_DANCESONG
 				(sc->getSCE(SC_ROKISWEIL) && skill_id != BD_ADAPTATION) ||
 #endif
 				(sc->getSCE(SC_HERMODE) && skill_get_inf(skill_id) & INF_SUPPORT_SKILL) ||
@@ -14094,7 +14094,7 @@ TIMER_FUNC(status_change_timer){
 			if (--sce->val3 <= 0)
 				break;
 			switch(sce->val1&0xFFFF) {
-#ifndef RENEWAL
+#ifdef PRERE_DANCESONG
 				case BD_RICHMANKIM:
 				case BD_DRUMBATTLEFIELD:
 				case BD_RINGNIBELUNGEN:
@@ -14126,7 +14126,7 @@ TIMER_FUNC(status_change_timer){
 					// Moonlit's cost is 4sp*skill_lv [Skotlex]
 					sp= 4*(sce->val1>>16);
 					// Upkeep is also every 10 secs.
-#ifndef RENEWAL
+#ifdef PRERE_DANCESONG
 				[[fallthrough]];
 				case DC_DONTFORGETME:
 #endif
@@ -14134,7 +14134,7 @@ TIMER_FUNC(status_change_timer){
 					break;
 			}
 			if( s != 0 && sce->val3 % s == 0 ) {
-#ifndef RENEWAL
+#ifdef PRERE_DANCESONG
 				if (sc->getSCE(SC_LONGING))
 					sp*= 3;
 #endif

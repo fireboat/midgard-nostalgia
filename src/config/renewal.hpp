@@ -17,6 +17,8 @@
  * @INFO: This file holds general-purpose renewal settings, for class-specific ones check /src/config/classes folder
  **/
 
+#define PRERE_DANCESONG
+
 /// Game renewal server mode
 /// (disable by commenting the line)
 ///
