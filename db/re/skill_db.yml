@@ -8771,7 +8771,9 @@ Body:
     Hit: Single
     HitCount: 1
     Element: Weapon
-    CastTime: 1500
+    CastTime: 500
+    AfterCastActDelay: 300
+    FixedCastTime: 300
     Requires:
       SpCost:
         - Level: 1
@@ -8789,6 +8791,7 @@ Body:
       Ammo:
         Arrow: true
       AmmoAmount: 1
+    CastCancel: false
   - Id: 317
     Name: BA_DISSONANCE
     Description: Unchained Serenade
@@ -9066,7 +9069,9 @@ Body:
     Hit: Single
     HitCount: 1
     Element: Weapon
-    CastTime: 1500
+    CastTime: 500
+    AfterCastActDelay: 300
+    FixedCastTime: 300
     Requires:
       SpCost:
         - Level: 1
@@ -9084,6 +9089,7 @@ Body:
       Ammo:
         Arrow: true
       AmmoAmount: 1
+    CastCancel: false
   - Id: 325
     Name: DC_UGLYDANCE
     Description: Hip Shaker
