@@ -16692,12 +16692,15 @@ static int32 skill_unit_onplace(struct skill_unit *unit, struct block_list *bl, 
 			if (!sce)
 				sc_start4(ss, bl,type,100,sg->skill_lv,sg->val1,sg->val2,0,sg->limit);
 			break;
+		case UNT_DONTFORGETME:
+			if (sg->src_id==bl->id)
+				return 0; //Does not affect the caster.
+			[[fallthrough]];
 		case UNT_WHISTLE:
 		case UNT_ASSASSINCROSS:
 		case UNT_POEMBRAGI:
 		case UNT_APPLEIDUN:
 		case UNT_HUMMING:
-		case UNT_DONTFORGETME:
 		case UNT_FORTUNEKISS:
 		case UNT_SERVICEFORYOU:
 			// if (sg->src_id==bl->id && !(sc && sc->getSCE(SC_SPIRIT) && sc->getSCE(SC_SPIRIT)->val2 == SL_BARDDANCER))

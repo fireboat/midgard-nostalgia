@@ -4490,8 +4490,6 @@ int32 status_calc_pc_sub(map_session_data* sd, uint8 opt)
 // ----- CRITICAL CALCULATION -----
 
 #ifdef RENEWAL
-	if ((skill = pc_checkskill(sd, DC_DANCINGLESSON)) > 0 && sd->status.weapon == W_WHIP)
-		base_status->cri += skill * 10;
 	if ((skill = pc_checkskill(sd, PR_MACEMASTERY)) > 0 && (sd->status.weapon == W_MACE || sd->status.weapon == W_2HMACE))
 		base_status->cri += skill * 10;
 	if ((skill = pc_checkskill(sd, SM_SWORD)) > 0 && (sd->status.weapon == W_DAGGER || sd->status.weapon == W_1HSWORD))
@@ -8170,8 +8168,6 @@ static int16 status_calc_aspd(struct block_list *bl, status_change *sc, bool fix
 		uint8 skill_lv;
 
 		if (sd) {
-			if ((skill_lv = pc_checkskill(sd, BA_MUSICALLESSON)) > 0)
-				bonus += skill_lv;
 			if ((skill_lv = pc_checkskill(sd, RG_PLAGIARISM)) > 0)
 				bonus += skill_lv;
 			if ((skill_lv = pc_checkskill(sd, SA_ADVANCEDBOOK)) > 0 && sd->status.weapon == W_BOOK)
