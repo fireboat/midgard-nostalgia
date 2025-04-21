@@ -1837,8 +1837,14 @@ int64 battle_calc_damage(struct block_list *src,struct block_list *bl,struct Dam
 			status_data* status = status_get_status_data(*bl);
 			int32 per = 100*status->sp / status->max_sp -1; //100% should be counted as the 80~99% interval
 			per /=20; //Uses 20% SP intervals.
-			//SP Cost: 1% + 0.5% per every 20% SP
-			if (!status_charge(bl, 0, (10+5*per)*status->max_sp/1000))
+
+			if (per >= 3) // Prevent cast cancel when SP >= 60%
+				tsd->special_state.no_castcancel = 1;
+			else
+				tsd->special_state.no_castcancel = 0;
+			
+			//SP Cost: 1% + 1% per every 20% SP
+			if (!status_charge(bl, 0, (10+10*per)*status->max_sp/1000))
 				status_change_end(bl, SC_ENERGYCOAT);
 			damage -= damage * 6 * (1 + per) / 100; //Reduction: 6% + 6% every 20%
 		}

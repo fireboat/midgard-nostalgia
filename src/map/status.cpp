@@ -8168,6 +8168,9 @@ static int16 status_calc_aspd(struct block_list *bl, status_change *sc, bool fix
 		uint8 skill_lv;
 
 		if (sd) {
+			if (bl->type&BL_PC && sc->getSCE(SC_DANCING))
+				bonus -= 50 - (pc_checkskill(sd, sd->status.sex ? BA_MUSICALLESSON : DC_DANCINGLESSON) * 5);
+
 			if ((skill_lv = pc_checkskill(sd, RG_PLAGIARISM)) > 0)
 				bonus += skill_lv;
 			if ((skill_lv = pc_checkskill(sd, SA_ADVANCEDBOOK)) > 0 && sd->status.weapon == W_BOOK)
@@ -13241,7 +13244,10 @@ int32 status_change_end(struct block_list* bl, enum sc_type type, int32 tid)
 			if (sc->getSCE(SC_PROVOKE) && sc->getSCE(SC_PROVOKE)->val4 == 1)
 				status_change_end(bl, SC_PROVOKE);
 			break;
-
+		case SC_ENERGYCOAT:
+			if(bl->type == BL_PC)
+				sd->special_state.no_castcancel = 0;
+			break;
 		case SC_ENDURE:
 		case SC_DEFENDER:
 		case SC_REFLECTSHIELD:
