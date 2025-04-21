@@ -1837,12 +1837,6 @@ int64 battle_calc_damage(struct block_list *src,struct block_list *bl,struct Dam
 			status_data* status = status_get_status_data(*bl);
 			int32 per = 100*status->sp / status->max_sp -1; //100% should be counted as the 80~99% interval
 			per /=20; //Uses 20% SP intervals.
-
-			if (per >= 3) // Prevent cast cancel when SP >= 60%
-				tsd->special_state.no_castcancel = 1;
-			else
-				tsd->special_state.no_castcancel = 0;
-			
 			//SP Cost: 1% + 1% per every 20% SP
 			if (!status_charge(bl, 0, (10+10*per)*status->max_sp/1000))
 				status_change_end(bl, SC_ENERGYCOAT);
@@ -8421,7 +8415,7 @@ struct Damage battle_calc_magic_attack(struct block_list *src,struct block_list 
 					case WZ_FIREPILLAR:
 						if (sd && ad.div_ > 0)
 							ad.div_ *= -1; //For players, damage is divided by number of hits
-						skillratio += -60 + 20 * skill_lv; //20% MATK each hit
+						// skillratio += 100 * skill_lv; //20% MATK each hit
 						break;
 					case WZ_SIGHTRASHER:
 						skillratio += 20 * skill_lv;

@@ -768,7 +768,7 @@ Body:
     TargetType: Attack
     DamageFlags:
       NoDamage: true
-    Range: 2
+    Range: 7
     Hit: Single
     HitCount: 1
     Element: Earth
@@ -2906,29 +2906,7 @@ Body:
       - Level: 10
         Count: 12
     Element: Fire
-    SplashArea:
-      - Level: 1
-        Area: 1
-      - Level: 2
-        Area: 1
-      - Level: 3
-        Area: 1
-      - Level: 4
-        Area: 1
-      - Level: 5
-        Area: 1
-      - Level: 6
-        Area: 2
-      - Level: 7
-        Area: 2
-      - Level: 8
-        Area: 2
-      - Level: 9
-        Area: 2
-      - Level: 10
-        Area: 2
-      - Level: 11
-        Area: 2
+    SplashArea: 2
     ActiveInstance: 5
     CopyFlags:
       Skill:
@@ -3025,7 +3003,7 @@ Body:
       Target: Enemy
       Flag:
         NoReiteration: true
-        NoFootSet: true
+        NoFootSet: false
   - Id: 81
     Name: WZ_SIGHTRASHER
     Description: Sightrasher
@@ -3583,7 +3561,8 @@ Body:
     Description: Frost Nova
     MaxLevel: 10
     Type: Magic
-    TargetType: Self
+    TargetType: Attack
+    Range: 9
     DamageFlags:
       Splash: true
     Flags:
@@ -3591,32 +3570,12 @@ Body:
     Hit: Single
     HitCount: 1
     Element: Water
-    SplashArea: 3
+    SplashArea: 2
     CopyFlags:
       Skill:
         Plagiarism: true
         Reproduce: true
-    CastTime:
-      - Level: 1
-        Time: 640
-      - Level: 2
-        Time: 640
-      - Level: 3
-        Time: 576
-      - Level: 4
-        Time: 576
-      - Level: 5
-        Time: 512
-      - Level: 6
-        Time: 512
-      - Level: 7
-        Time: 448
-      - Level: 8
-        Time: 448
-      - Level: 9
-        Time: 384
-      - Level: 10
-        Time: 384
+    CastTime: 960
     AfterCastActDelay: 200
     Duration2:
       - Level: 1
@@ -3639,27 +3598,7 @@ Body:
         Time: 13500
       - Level: 10
         Time: 15000
-    FixedCastTime:
-      - Level: 1
-        Time: 160
-      - Level: 2
-        Time: 160
-      - Level: 3
-        Time: 144
-      - Level: 4
-        Time: 144
-      - Level: 5
-        Time: 128
-      - Level: 6
-        Time: 128
-      - Level: 7
-        Time: 112
-      - Level: 8
-        Time: 112
-      - Level: 9
-        Time: 96
-      - Level: 10
-        Time: 96
+    FixedCastTime: 320
     Requires:
       SpCost:
         - Level: 1

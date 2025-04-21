@@ -3366,6 +3366,9 @@ int32 unit_skillcastcancel(struct block_list *bl, char type)
 		if (sd && (sd->special_state.no_castcancel2 ||
 			((sd->sc.getSCE(SC_UNLIMITEDHUMMINGVOICE) || sd->special_state.no_castcancel) && !map_flag_gvg2(bl->m) && !map_getmapflag(bl->m, MF_BATTLEGROUND)))) // fixed flags being read the wrong way around [blackhole89]
 			return 0;
+
+		if (sd && sd->sc.getSCE(SC_ENERGYCOAT) && (100*sd->battle_status.sp / sd->battle_status.max_sp-1) > 60) 
+			return 0; // Energy Coat prevents cancel cast when SP is above 60%
 	}
 
 	ud->canact_tick = tick;

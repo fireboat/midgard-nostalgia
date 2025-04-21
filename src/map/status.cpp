@@ -13244,10 +13244,6 @@ int32 status_change_end(struct block_list* bl, enum sc_type type, int32 tid)
 			if (sc->getSCE(SC_PROVOKE) && sc->getSCE(SC_PROVOKE)->val4 == 1)
 				status_change_end(bl, SC_PROVOKE);
 			break;
-		case SC_ENERGYCOAT:
-			if(bl->type == BL_PC)
-				sd->special_state.no_castcancel = 0;
-			break;
 		case SC_ENDURE:
 		case SC_DEFENDER:
 		case SC_REFLECTSHIELD:
